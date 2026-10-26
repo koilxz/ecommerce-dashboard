@@ -1,0 +1,24 @@
+<Slide style={{ width:'1280px', height:'720px', fontFamily:'Microsoft YaHei', background:'#FFFFFF', padding:'44px 48px', display:'flex', flexDirection:'column' }}>
+  <Text style={{ fontSize:34, color:'#0B2A5B', fontWeight:'bold' }}>痛点 → 功能 → 动作（每个功能都变成对某个人有用的动作）</Text>
+  <Box style={{ width:'100%', height:'2px', background:'#D6DCE5', marginTop:14, marginBottom:16 }} />
+  <Box style={{ flex:1 }}>
+    <Table style={{ width:'100%', height:'100%' }}
+      defaultTextStyle={{ fontSize:17, color:'#1A2230', textAlign:'left' }}
+      defaultCellStyle={{ border:{ left:{width:1,color:'#E5E7EB'}, right:{width:1,color:'#E5E7EB'}, top:{width:1,color:'#E5E7EB'}, bottom:{width:1,color:'#E5E7EB'} }, padding:'10px 12px' }}
+      cells={[
+        [
+          { text:'真实痛点', textStyle:{ bold:true, color:'#FFFFFF' }, cellStyle:{ background:{ color:'#0B2A5B' } } },
+          { text:'对应功能', textStyle:{ bold:true, color:'#FFFFFF' }, cellStyle:{ background:{ color:'#0B2A5B' } } },
+          { text:'给该角色的具体动作', textStyle:{ bold:true, color:'#FFFFFF' }, cellStyle:{ background:{ color:'#0B2A5B' } } },
+          { text:'受益角色', textStyle:{ bold:true, color:'#FFFFFF' }, cellStyle:{ background:{ color:'#0B2A5B' } } },
+        ],
+        [ '选品 / 找利润品难', '品类排行 / 增长案例', '本周主推健康美容，停补下跌品类', '林姐' ],
+        [ '库存积压 / 现金流', '补货信号 + 异常预警', '当周下调酷玩进货、转预算给增长品类', '陈总' ],
+        [ '广告 ROI / 流量焦虑', '经营诊断（环比 + 品类贡献）', '把广告预算从低效品类挪到高增长品类', '小吴' ],
+        [ '退货与差评', '诊断（平均评分）监测', '评分跌破阈值即查详情页与质量', '林姐' ],
+        [ '多店管理', '卖家视角切换', '逐店看独立诊断，免跨平台手工拼表', '小吴' ],
+        [ '数据分析门槛 / 无动作', '诊断结论文案 + 术语气泡 + 预警', '看一句话结论即可决策，不必懂术语', '林姐 / 陈总' ],
+      ]}
+    />
+  </Box>
+</Slide>

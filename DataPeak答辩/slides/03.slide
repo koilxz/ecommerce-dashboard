@@ -1,0 +1,20 @@
+<Slide style={{ width:'1280px', height:'720px', fontFamily:'Microsoft YaHei', background:'#FFFFFF', padding:'44px 56px', display:'flex', flexDirection:'column' }}>
+  <Text style={{ fontSize:34, color:'#0B2A5B', fontWeight:'bold' }}>老师的四点意见，我们这样回应</Text>
+  <Box style={{ width:'100%', height:'2px', background:'#D6DCE5', marginTop:14, marginBottom:18 }} />
+  <Box style={{ flex:1, display:'flex', flexDirection:'column' }}>
+    <Table style={{ width:'100%', height:'100%' }}
+      defaultTextStyle={{ fontSize:18, color:'#1A2230', textAlign:'left' }}
+      defaultCellStyle={{ border:{ left:{width:1,color:'#E5E7EB'}, right:{width:1,color:'#E5E7EB'}, top:{width:1,color:'#E5E7EB'}, bottom:{width:1,color:'#E5E7EB'} } }}
+      cells={[
+        [
+          { text:'老师的意见', textStyle:{ bold:true, color:'#FFFFFF', fontSize:19 }, cellStyle:{ background:{ color:'#0B2A5B' } } },
+          { text:'我们的改法', textStyle:{ bold:true, color:'#FFFFFF', fontSize:19 }, cellStyle:{ background:{ color:'#0B2A5B' } } },
+        ],
+        [ '图表太多', { text:'砍到 6 张"问题式"图表，每张回答一个决策问题，不堆装饰', cellStyle:{ background:{ color:'#F2F7FF' } } } ],
+        [ '没针对具体人群', '以林姐 / 小吴 / 陈总三个真实人物为叙事主线；看板新增三角色视角' ],
+        [ '没真实抓住痛点', '用 Olist 真实指标佐证：延迟 8.8%、酷玩 −41.9%、健康美容 +37.8%' ],
+        [ '没实质性帮助', { text:'每个功能接到一个角色 + 一个动作；首页"今日行动清单"给 3 条可执行动作', cellStyle:{ background:{ color:'#EAF7F1' } } } ],
+      ]}
+    />
+  </Box>
+</Slide>

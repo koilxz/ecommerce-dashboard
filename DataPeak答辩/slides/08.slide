@@ -1,0 +1,11 @@
+<Slide style={{ width:'1280px', height:'720px', fontFamily:'Microsoft YaHei', background:'#F2F7FF', display:'flex', flexDirection:'row' }}>
+  <Box style={{ width:'460px', height:'720px', background:'linear-gradient(135deg, #0B2A5B 0%, #0E4DA4 100%)', display:'flex', flexDirection:'column', justifyContent:'center', alignItems:'flex-end', padding:'0 56px' }}>
+    <Text style={{ fontSize:180, color:'#1E6FFF', fontWeight:'bold' }}>03</Text>
+  </Box>
+  <Box style={{ flex:1, height:'720px', display:'flex', flexDirection:'column', justifyContent:'center', padding:'0 64px' }}>
+    <Text style={{ fontSize:20, color:'#0E4DA4', letterSpacing:4 }}>CHAPTER 03</Text>
+    <Text style={{ fontSize:44, color:'#0B2A5B', fontWeight:'bold', marginTop:14 }}>怎么帮到 · 诚实标注</Text>
+    <Box style={{ width:'80px', height:'4px', background:'#00C48C', marginTop:22, marginBottom:22 }} />
+    <Text style={{ fontSize:23, color:'#4A5568', lineHeight:1.8 }}>用<span style={{ color:'#0B2A5B', fontWeight:'bold' }}>一个真实场景</span>证明实质性帮助，<br/>并诚实说明数据口径。</Text>
+  </Box>
+</Slide>

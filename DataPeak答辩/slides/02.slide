@@ -1,0 +1,17 @@
+<Slide style={{ width:'1280px', height:'720px', fontFamily:'Microsoft YaHei', background:'#FFFFFF', display:'flex', flexDirection:'row' }}>
+  <Box style={{ width:'400px', height:'720px', background:'linear-gradient(135deg, #0B2A5B 0%, #0E4DA4 100%)', display:'flex', flexDirection:'column', justifyContent:'center', padding:'0 44px' }}>
+    <Text style={{ fontSize:20, color:'#7FD8C4', letterSpacing:6 }}>CONTENTS</Text>
+    <Text style={{ fontSize:46, color:'#FFFFFF', fontWeight:'bold', marginTop:12 }}>目录</Text>
+    <Box style={{ width:'60px', height:'4px', background:'#00C48C', marginTop:20 }} />
+    <Text style={{ fontSize:15, color:'#A9C4E8', marginTop:26, lineHeight:1.7 }}>从真实的人与真实<br/>的痛点出发，落到<br/>能执行的动作。</Text>
+  </Box>
+  <Box style={{ flex:1, height:'720px', display:'flex', flexDirection:'column', justifyContent:'center', padding:'0 64px', gap:26 }}>
+    {[['01','为谁做，痛在哪','真实人群 + 被数据戳中的真痛点'],['02','针对他们做了什么','功能 × 人物 × 动作'],['03','怎么帮到 · 诚实标注','完整场景 + 学术诚信']].map((it,i)=>(
+      <Box key={i} style={{ display:'flex', flexDirection:'row', alignItems:'center', gap:24 }}>
+        <Text style={{ fontSize:42, color:'#0E4DA4', fontWeight:'bold' }}>{it[0]}</Text>
+        <Box style={{ width:'1px', height:'46px', background:'#D6DCE5' }} />
+        <Box><Text style={{ fontSize:26, color:'#1A2230', fontWeight:'bold' }}>{it[1]}</Text><Text style={{ fontSize:17, color:'#8B97A8', marginTop:4 }}>{it[2]}</Text></Box>
+      </Box>
+    ))}
+  </Box>
+</Slide>

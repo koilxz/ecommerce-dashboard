@@ -1,0 +1,19 @@
+<Slide style={{ width:'1280px', height:'720px', fontFamily:'Microsoft YaHei', position:'relative', background:'linear-gradient(135deg, #0B2A5B 0%, #0E4DA4 100%)' }}>
+  <Box style={{ position:'absolute', top:56, left:80 }}>
+    <Text style={{ fontSize:22, color:'#7FD8C4', letterSpacing:4 }}>E-COMMERCE SALES INSIGHT DASHBOARD</Text>
+  </Box>
+  <Box style={{ height:'720px', display:'flex', flexDirection:'column', justifyContent:'center', padding:'0 80px' }}>
+    <Text style={{ fontSize:64, color:'#FFFFFF', fontWeight:'bold' }}>DataPeak · 电商销售数据洞察看板</Text>
+    <Text style={{ fontSize:26, color:'#C7E6FF', marginTop:18 }}>为中小电商卖家而做：把数据结论，变成能下单的动作</Text>
+    <Box style={{ display:'flex', flexDirection:'row', gap:16, marginTop:34 }}>
+      <Box style={{ background:'rgba(255,255,255,0.14)', borderRadius:20, padding:'10px 22px' }}><Text style={{ fontSize:18, color:'#FFFFFF' }}>真实登录</Text></Box>
+      <Box style={{ background:'rgba(0,196,140,0.22)', borderRadius:20, padding:'10px 22px' }}><Text style={{ fontSize:18, color:'#BFF3E2' }}>多店铺视角</Text></Box>
+      <Box style={{ background:'rgba(255,255,255,0.14)', borderRadius:20, padding:'10px 22px' }}><Text style={{ fontSize:18, color:'#FFFFFF' }}>诊断 · 动作闭环</Text></Box>
+    </Box>
+  </Box>
+  <Box style={{ position:'absolute', bottom:48, left:80, display:'flex', flexDirection:'row', gap:40 }}>
+    <Box><Text style={{ fontSize:14, color:'#9FB8E0' }}>课程</Text><Text style={{ fontSize:18, color:'#FFFFFF', fontWeight:'bold', marginTop:4 }}>Web 应用开发课程设计</Text></Box>
+    <Box><Text style={{ fontSize:14, color:'#9FB8E0' }}>汇报人</Text><Text style={{ fontSize:18, color:'#FFFFFF', fontWeight:'bold', marginTop:4 }}>DataPeak 团队</Text></Box>
+    <Box><Text style={{ fontSize:14, color:'#9FB8E0' }}>日期</Text><Text style={{ fontSize:18, color:'#FFFFFF', fontWeight:'bold', marginTop:4 }}>2026.10</Text></Box>
+  </Box>
+</Slide>

@@ -1,0 +1,28 @@
+<Slide style={{ width:'1280px', height:'720px', fontFamily:'Microsoft YaHei', background:'#FFFFFF', padding:'44px 48px', display:'flex', flexDirection:'column' }}>
+  <Text style={{ fontSize:34, color:'#0B2A5B', fontWeight:'bold' }}>三个真实用户，三个被数据戳中的痛点</Text>
+  <Text style={{ fontSize:19, color:'#8B97A8', marginTop:8 }}>用户不是"抽象的中小卖家"，是这三个具体的人（画像为卖家视角切片示例）</Text>
+  <Box style={{ width:'100%', height:'2px', background:'#D6DCE5', marginTop:14, marginBottom:22 }} />
+  <Box style={{ flex:1, display:'flex', flexDirection:'row', gap:22 }}>
+    {[
+      ['store','林姐 · 女装店主','35 岁，不懂数据', '选品靠感觉、服装退货高易压货，最怕"压错款 → 现金流断"', '酷玩 −41.9% → 系统建议停补并清仓', '#0E4DA4'],
+      ['layer-group','小吴 · 代运营','23 岁，管 5 家店', '5 店数据分散、口径不一，老板问"为啥跌"答不上', '复购率仅 1.8% → 建议加强老客召回', '#00A878'],
+      ['coins','陈总 · 经销商','45 岁，怕压错品类', 'ERP 报表滞后一周，怕压错品类占死现金流', '健康美容 +37.8% → 预算转给增长品类', '#0E4DA4'],
+    ].map((p,i)=>(
+      <Box key={i} style={{ flex:1, background:'#F2F7FF', borderRadius:16, padding:'24px 22px', display:'flex', flexDirection:'column', border:'1px solid #E1EAF6' }}>
+        <Box style={{ display:'flex', flexDirection:'row', alignItems:'center', gap:14 }}>
+          <Box style={{ width:54, height:54, borderRadius:27, background:'#FFFFFF', display:'flex', alignItems:'center', justifyContent:'center', boxShadow:'0 2px 8px rgba(11,42,91,0.12)' }}>
+            <FAIcon name={p[0]} style={{ fill:p[5], width:28, height:28 }} />
+          </Box>
+          <Box>
+            <Text style={{ fontSize:22, color:'#0B2A5B', fontWeight:'bold' }}>{p[1]}</Text>
+            <Text style={{ fontSize:15, color:'#8B97A8', marginTop:2 }}>{p[2]}</Text>
+          </Box>
+        </Box>
+        <Text style={{ fontSize:18, color:'#1A2230', marginTop:18, lineHeight:1.6 }}>{p[3]}</Text>
+        <Box style={{ marginTop:'auto', background:'#0B2A5B', borderRadius:10, padding:'14px 16px' }}>
+          <Text style={{ fontSize:17, color:'#8BE0CC', fontWeight:'bold', lineHeight:1.5 }}>{p[4]}</Text>
+        </Box>
+      </Box>
+    ))}
+  </Box>
+</Slide>

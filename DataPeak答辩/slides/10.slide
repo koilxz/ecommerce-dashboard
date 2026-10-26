@@ -1,0 +1,18 @@
+<Slide style={{ width:'1280px', height:'720px', fontFamily:'Microsoft YaHei', background:'#FFFFFF', padding:'44px 48px', display:'flex', flexDirection:'column' }}>
+  <Text style={{ fontSize:34, color:'#0B2A5B', fontWeight:'bold' }}>林姐的周一早晨：3 分钟，两个决定</Text>
+  <Text style={{ fontSize:19, color:'#8B97A8', marginTop:8 }}>一个完整场景，证明"实质性帮助"——她不必懂数据，照做即可</Text>
+  <Box style={{ width:'100%', height:'2px', background:'#D6DCE5', marginTop:14, marginBottom:24 }} />
+  <Box style={{ display:'flex', flexDirection:'row', alignItems:'stretch', gap:10 }}>
+    {[['08:50','打开看板','首页顶部"今日行动清单"直接给出 3 条建议','#0E4DA4'],['09:02','看到预警','「酷玩」品类环比 −41.9%，系统标红','#D9534F'],['09:03','决定一：清仓','酷玩降价清库存、停止补货','#0E4DA4'],['09:04','决定二：加注','「健康美容」+37.8%，预算转去主推','#00A878']].map((s,i)=>(
+      <Box key={i} style={{ flex:1, background:'#F2F7FF', borderRadius:12, padding:'20px 16px', display:'flex', flexDirection:'column', border:'1px solid #E1EAF6' }}>
+        <Text style={{ fontSize:20, color:s[3], fontWeight:'bold' }}>{s[0]}</Text>
+        <Text style={{ fontSize:22, color:'#0B2A5B', fontWeight:'bold', marginTop:8 }}>{s[1]}</Text>
+        <Text style={{ fontSize:16, color:'#4A5568', marginTop:10, lineHeight:1.6 }}>{s[2]}</Text>
+      </Box>
+    ))}
+  </Box>
+  <Box style={{ flex:1, background:'linear-gradient(135deg, #0B2A5B 0%, #0E4DA4 100%)', borderRadius:12, marginTop:22, display:'flex', flexDirection:'row', alignItems:'center', justifyContent:'center', gap:16, padding:'0 30px' }}>
+    <Text style={{ fontSize:24, color:'#8BE0CC', fontWeight:'bold' }}>以前要半天拉 Excel，现在 3 分钟定下下周动作。</Text>
+    <Text style={{ fontSize:18, color:'#C7E6FF' }}>—— 这才是"实质性帮助"</Text>
+  </Box>
+</Slide>

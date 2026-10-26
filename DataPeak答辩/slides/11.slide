@@ -1,0 +1,21 @@
+<Slide style={{ width:'1280px', height:'720px', fontFamily:'Microsoft YaHei', background:'#FFFFFF', padding:'44px 48px', display:'flex', flexDirection:'column' }}>
+  <Text style={{ fontSize:34, color:'#0B2A5B', fontWeight:'bold' }}>诚实地讲清楚，才能真帮到</Text>
+  <Box style={{ width:'100%', height:'2px', background:'#D6DCE5', marginTop:14, marginBottom:22 }} />
+  <Box style={{ display:'flex', flexDirection:'row', gap:20 }}>
+    {[
+      ['补货建议','明确标注"基于销售趋势推测，非实时库存"——Olist 无库存字段，不假装万能。','#0E4DA8'.toLowerCase()],
+      ['复购率 1.8%','说明"本数据集订单天然低频，属数据特性，真实店铺通常更高"——不背系统缺陷的锅。','#00A878'],
+      ['画像与调研口径','人物画像标注"卖家视角切片示例"；调研基于公开行业报告 + 真实数据印证，未做一手访谈，如实说明。','#0E4DA8'],
+    ].map((c,i)=>(
+      <Box key={i} style={{ flex:1, background:'#F2F7FF', borderRadius:14, padding:'22px 20px', display:'flex', flexDirection:'column', border:'1px solid #E1EAF6' }}>
+        <Box style={{ width:44, height:4, background:c[2], borderRadius:2 }} />
+        <Text style={{ fontSize:22, color:'#0B2A5B', fontWeight:'bold', marginTop:14 }}>{c[0]}</Text>
+        <Text style={{ fontSize:17, color:'#4A5568', marginTop:12, lineHeight:1.7 }}>{c[1]}</Text>
+      </Box>
+    ))}
+  </Box>
+  <Box style={{ flex:1, background:'linear-gradient(135deg, #0B2A5B 0%, #0E4DA4 100%)', borderRadius:14, marginTop:22, display:'flex', flexDirection:'column', justifyContent:'center', alignItems:'center', padding:'0 60px' }}>
+    <Text style={{ fontSize:28, color:'#FFFFFF', fontWeight:'bold' }}>致谢</Text>
+    <Text style={{ fontSize:18, color:'#C7E6FF', marginTop:12, lineHeight:1.7, textAlign:'center' }}>感谢课程老师与评审的指导，感谢 Olist 开源电商数据集提供的真实业务样本。<br/>谢谢聆听，欢迎提问。</Text>
+  </Box>
+</Slide>
