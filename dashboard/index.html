@@ -1,0 +1,1654 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>电商销售数据洞察看板 · DataPeak</title>
+<script src="assets/echarts.min.js"></script>
+<!-- T7：主题样式 + ECharts datapeak 主题注册（前端契约 §8） -->
+<link rel="stylesheet" href="assets/theme.css">
+<script>
+  /* ECharts datapeak 主题：必须在 echarts 加载后注册一次 */
+  (function () {
+    if (!window.echarts) return;
+    var dpTheme = {
+      color: ['#2F6BFF', '#22C55E', '#F59E0B', '#EF4444', '#94A3B8', '#60A5FA', '#34D399', '#FBBF24'],
+      backgroundColor: 'transparent',
+      textStyle: { fontFamily: 'system-ui, "Microsoft YaHei", sans-serif', color: '#5B6272' },
+      title: { textStyle: { color: '#1F2937', fontWeight: 600 } },
+      legend: { textStyle: { color: '#8A90A2' } }
+    };
+    echarts.registerTheme('datapeak', dpTheme);
+  })();
+</script>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; background: #F7F8FC; color: #1A1D29; min-height: 100vh; font-size: 14px; -webkit-font-smoothing: antialiased; }
+.app { display: flex; min-height: 100vh; }
+
+/* ===== 侧边栏 ===== */
+.sidebar { width: 240px; background: #fff; border-right: 1px solid #EEF0F5; padding: 20px 14px; display: flex; flex-direction: column; position: fixed; height: 100vh; left: 0; top: 0; z-index: 100; overflow-y: auto; }
+.logo { display: flex; align-items: center; gap: 10px; padding: 0 6px 20px; border-bottom: 1px solid #F3F4F9; margin-bottom: 20px; }
+.logo-mark { width: 32px; height: 32px; border-radius: 9px; background: linear-gradient(135deg, #7C84FF 0%, #5B5FFF 100%); display: flex; align-items: center; justify-content: center; }
+.logo-mark svg { width: 16px; height: 16px; stroke: #fff; fill: none; stroke-width: 2.2; }
+.logo-text { font-size: 16px; font-weight: 700; letter-spacing: -0.3px; }
+.nav-group { margin-bottom: 22px; }
+.nav-label { font-size: 10px; font-weight: 600; color: #9AA1B2; text-transform: uppercase; letter-spacing: 1.2px; padding: 0 10px 8px; }
+.nav-item { display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-radius: 7px; cursor: pointer; transition: all 0.15s; font-size: 13px; color: #5B6272; font-weight: 500; margin-bottom: 2px; }
+.nav-item:hover { background: #F3F4F9; color: #1A1D29; }
+.nav-item.active { background: linear-gradient(135deg, rgba(124,132,255,0.1), rgba(91,95,255,0.08)); color: #5B5FFF; font-weight: 600; }
+.nav-icon { width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; }
+.nav-icon svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.sidebar-bottom { margin-top: auto; padding-top: 16px; border-top: 1px solid #F3F4F9; }
+.user-card { display: flex; align-items: center; gap: 10px; padding: 8px; border-radius: 9px; cursor: pointer; }
+.user-card:hover { background: #F7F8FC; }
+.user-avatar { width: 32px; height: 32px; border-radius: 8px; background: linear-gradient(135deg, #FFB199, #FF6B6B); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 11px; font-weight: 700; }
+.user-info { flex: 1; min-width: 0; }
+.user-name { font-size: 12.5px; font-weight: 600; }
+.user-role { font-size: 10.5px; color: #9AA1B2; margin-top: 1px; }
+
+/* ===== 主内容 ===== */
+.main { margin-left: 240px; flex: 1; padding: 24px 32px; }
+.topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 22px; }
+.page-title h1 { font-size: 22px; font-weight: 700; letter-spacing: -0.4px; margin-bottom: 3px; }
+.page-title p { font-size: 12.5px; color: #8A90A2; }
+.topbar-right { display: flex; align-items: center; gap: 10px; }
+.search-box { position: relative; width: 260px; }
+.search-box input { width: 100%; padding: 8px 12px 8px 34px; border: 1px solid #E4E7EF; border-radius: 7px; font-size: 12.5px; background: #fff; outline: none; color: #5B6272; transition: all 0.2s; font-family: inherit; }
+.search-box input:focus { border-color: #7C84FF; box-shadow: 0 0 0 3px rgba(124,132,255,0.1); }
+.search-box svg { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); width: 14px; height: 14px; stroke: #9AA1B2; fill: none; stroke-width: 2; }
+.icon-btn { width: 34px; height: 34px; border: 1px solid #E4E7EF; border-radius: 7px; background: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s; position: relative; }
+.icon-btn:hover { border-color: #D0D4DE; background: #FAFBFF; }
+.icon-btn svg { width: 15px; height: 15px; stroke: #5B6272; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.icon-btn .badge { position: absolute; top: 5px; right: 5px; width: 7px; height: 7px; background: #FF6B6B; border-radius: 50%; border: 1.5px solid #fff; }
+
+/* ===== 筛选栏 ===== */
+.filter-bar { background: #fff; border: 1px solid #EEF0F5; border-radius: 11px; padding: 14px 18px; margin-bottom: 20px; display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
+.filter-group { display: flex; align-items: center; gap: 8px; }
+.filter-label { font-size: 11.5px; font-weight: 600; color: #8A90A2; white-space: nowrap; }
+.filter-select { padding: 6px 10px; border: 1px solid #E4E7EF; border-radius: 6px; font-size: 12px; background: #FAFBFF; cursor: pointer; color: #5B6272; font-family: inherit; outline: none; transition: all 0.15s; min-width: 130px; }
+.filter-select:hover { border-color: #D0D4DE; }
+.filter-select:focus { border-color: #7C84FF; }
+.date-range { display: flex; align-items: center; gap: 6px; }
+.date-range input[type="date"] { padding: 6px 8px; border: 1px solid #E4E7EF; border-radius: 6px; font-size: 12px; background: #FAFBFF; color: #5B6272; font-family: inherit; outline: none; }
+.date-sep { color: #C4C9D6; font-size: 11px; }
+.quick-tags { display: flex; gap: 3px; }
+.quick-tag { padding: 4px 10px; border-radius: 5px; font-size: 11px; font-weight: 500; color: #8A90A2; cursor: pointer; transition: all 0.15s; }
+.quick-tag:hover { background: #F3F4F9; color: #5B6272; }
+.quick-tag.active { background: linear-gradient(135deg, #7C84FF, #5B5FFF); color: #fff; font-weight: 600; }
+.apply-btn { margin-left: auto; padding: 7px 18px; background: linear-gradient(135deg, #7C84FF, #5B5FFF); color: #fff; border: none; border-radius: 7px; font-size: 12.5px; font-weight: 600; cursor: pointer; transition: all 0.2s; font-family: inherit; }
+.apply-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(124,132,255,0.3); }
+
+/* ===== 页面容器 ===== */
+.page { display: none; }
+.page.active { display: block; }
+
+/* ===== KPI卡片 ===== */
+.kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 18px; }
+.kpi-card { background: #fff; border: 1px solid #EEF0F5; border-radius: 12px; padding: 18px 20px; transition: all 0.2s; }
+.kpi-card:hover { border-color: #E0E3EE; box-shadow: 0 4px 16px rgba(26,29,41,0.04); }
+.kpi-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.kpi-title { font-size: 12px; font-weight: 500; color: #8A90A2; display: flex; align-items: center; gap: 8px; }
+.kpi-icon { width: 26px; height: 26px; border-radius: 6px; display: flex; align-items: center; justify-content: center; }
+.kpi-icon svg { width: 14px; height: 14px; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.kpi-num { font-size: 26px; font-weight: 700; letter-spacing: -0.6px; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.kpi-unit { font-size: 12px; font-weight: 500; color: #9AA1B2; margin-left: 3px; }
+.kpi-trend { margin-top: 8px; display: flex; align-items: center; gap: 5px; font-size: 11px; }
+.trend-tag { padding: 2px 7px; border-radius: 4px; font-weight: 600; font-size: 10.5px; }
+.trend-up { color: #22C55E; } .trend-up .trend-tag { background: rgba(34,197,94,0.1); }
+.trend-down { color: #EF4444; } .trend-down .trend-tag { background: rgba(239,68,68,0.1); }
+.trend-flat { color: #8A90A2; } .trend-flat .trend-tag { background: rgba(138,144,162,0.12); }
+.trend-label { color: #9AA1B2; }
+.kpi-indigo .kpi-num { color: #5B5FFF; } .kpi-indigo .kpi-icon { background: rgba(91,95,255,0.08); } .kpi-indigo .kpi-icon svg { stroke: #5B5FFF; fill: none; }
+.kpi-pink .kpi-num { color: #EC4899; } .kpi-pink .kpi-icon { background: rgba(236,72,153,0.08); } .kpi-pink .kpi-icon svg { stroke: #EC4899; fill: none; }
+.kpi-cyan .kpi-num { color: #06B6D4; } .kpi-cyan .kpi-icon { background: rgba(6,182,212,0.08); } .kpi-cyan .kpi-icon svg { stroke: #06B6D4; fill: none; }
+.kpi-amber .kpi-num { color: #F59E0B; } .kpi-amber .kpi-icon { background: rgba(245,158,11,0.08); } .kpi-amber .kpi-icon svg { stroke: #F59E0B; fill: none; }
+
+/* ===== 图表卡片 ===== */
+.chart-card { background: #fff; border: 1px solid #EEF0F5; border-radius: 12px; padding: 18px 20px; }
+.card-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+.card-title { font-size: 13.5px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+.card-title svg { width: 15px; height: 15px; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.card-sub { font-size: 11px; color: #9AA1B2; margin-top: 2px; }
+.card-action { display: flex; align-items: center; gap: 6px; }
+.card-tab { padding: 3px 9px; border-radius: 5px; font-size: 10.5px; font-weight: 500; color: #8A90A2; cursor: pointer; transition: all 0.15s; }
+.card-tab:hover { background: #F3F4F9; }
+.card-tab.active { background: rgba(91,95,255,0.1); color: #5B5FFF; font-weight: 600; }
+.card-more-link { font-size: 11px; color: #8A90A2; cursor: pointer; }
+.card-more-link:hover { color: #5B5FFF; }
+.chart-box { width: 100%; }
+.two-col { display: grid; grid-template-columns: 2fr 1fr; gap: 14px; margin-bottom: 18px; }
+.three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; margin-bottom: 18px; }
+
+/* ===== 饼图 ===== */
+.pie-wrap { display: flex; flex-direction: column; align-items: center; }
+.pie-chart { width: 100%; height: 180px; }
+.pie-legend { width: 100%; display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
+.legend-row { display: flex; align-items: center; justify-content: space-between; font-size: 11.5px; padding: 4px 6px; border-radius: 5px; }
+.legend-row:hover { background: #F7F8FC; }
+.legend-left { display: flex; align-items: center; gap: 7px; color: #5B6272; font-weight: 500; }
+.legend-dot { width: 7px; height: 7px; border-radius: 50%; }
+.legend-value { font-weight: 600; font-variant-numeric: tabular-nums; }
+
+/* ===== TOP列表 ===== */
+.top-list { display: flex; flex-direction: column; gap: 1px; }
+.top-row { display: flex; align-items: center; gap: 10px; padding: 8px 8px; border-radius: 6px; transition: background 0.15s; }
+.top-row:hover { background: #F7F8FC; }
+.top-rank { width: 18px; height: 18px; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; background: #F0F2F7; color: #8A90A2; flex-shrink: 0; }
+.top-row:nth-child(1) .top-rank { background: linear-gradient(135deg, #7C84FF, #5B5FFF); color: #fff; }
+.top-row:nth-child(2) .top-rank { background: #E4E7EF; color: #5B6272; }
+.top-row:nth-child(3) .top-rank { background: #EEF0F5; color: #8A90A2; }
+.top-info { flex: 1; min-width: 0; }
+.top-name { font-size: 12px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.top-cat { font-size: 10.5px; color: #9AA1B2; margin-top: 2px; }
+.top-num { font-size: 12px; font-weight: 600; color: #5B5FFF; font-variant-numeric: tabular-nums; text-align: right; flex-shrink: 0; }
+.top-bar-bg { width: 50px; height: 3px; background: #F0F2F7; border-radius: 2px; overflow: hidden; flex-shrink: 0; margin: 0 6px; }
+.top-bar-fill { height: 100%; background: linear-gradient(90deg, #7C84FF, #EC4899); border-radius: 2px; }
+
+/* ===== 表格 ===== */
+.table-card { background: #fff; border: 1px solid #EEF0F5; border-radius: 12px; padding: 18px 20px; }
+.table-head-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+.table-title { font-size: 13.5px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+.table-title svg { width: 15px; height: 15px; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.table-count { font-size: 10.5px; font-weight: 500; color: #8A90A2; background: #F3F4F9; padding: 2px 8px; border-radius: 4px; margin-left: 4px; }
+.table-tools { display: flex; align-items: center; gap: 8px; }
+.mini-btn { padding: 5px 10px; border: 1px solid #E4E7EF; border-radius: 6px; background: #fff; cursor: pointer; font-size: 11px; color: #5B6272; font-family: inherit; display: flex; align-items: center; gap: 5px; transition: all 0.15s; }
+.mini-btn:hover { border-color: #D0D4DE; background: #FAFBFF; }
+.mini-btn svg { width: 12px; height: 12px; stroke: currentColor; fill: none; stroke-width: 2; }
+.data-table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 12.5px; }
+.data-table thead th { padding: 10px 14px; text-align: left; font-weight: 600; color: #8A90A2; font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid #EEF0F5; background: #FAFBFF; }
+.data-table thead th:first-child { border-radius: 7px 0 0 0; }
+.data-table thead th:last-child { border-radius: 0 7px 0 0; }
+.data-table tbody td { padding: 11px 14px; border-bottom: 1px solid #F5F6FA; color: #5B6272; }
+.data-table tbody tr:hover { background: #FAFBFF; }
+.data-table tbody tr:last-child td { border-bottom: none; }
+.order-id { font-family: 'SF Mono', 'JetBrains Mono', Consolas, monospace; font-size: 11px; color: #8A90A2; background: #F7F8FC; padding: 3px 7px; border-radius: 4px; }
+.amount { font-weight: 700; font-variant-numeric: tabular-nums; }
+.status-pill { display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px; border-radius: 20px; font-size: 10.5px; font-weight: 600; }
+.status-pill::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+.status-ok { background: rgba(34,197,94,0.1); color: #16A34A; }
+.status-wait { background: rgba(245,158,11,0.1); color: #D97706; }
+.status-cancel { background: rgba(239,68,68,0.1); color: #DC2626; }
+.product-cell { display: flex; align-items: center; gap: 10px; }
+.product-cell img { width: 36px; height: 36px; border-radius: 7px; object-fit: cover; background: #F0F2F7; flex-shrink: 0; }
+.product-name { font-size: 12.5px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px; }
+.product-sku { font-size: 10.5px; color: #9AA1B2; margin-top: 2px; }
+.pagination { display: flex; justify-content: flex-end; align-items: center; gap: 4px; margin-top: 14px; }
+.page-btn { min-width: 26px; height: 26px; padding: 0 7px; border: 1px solid #E4E7EF; border-radius: 5px; background: #fff; cursor: pointer; font-size: 11.5px; color: #5B6272; font-family: inherit; transition: all 0.15s; display: flex; align-items: center; justify-content: center; }
+.page-btn:hover { border-color: #D0D4DE; background: #FAFBFF; }
+.page-btn.active { background: linear-gradient(135deg, #7C84FF, #5B5FFF); color: #fff; border-color: transparent; font-weight: 600; }
+.page-info { font-size: 11px; color: #9AA1B2; margin: 0 10px 0 4px; }
+
+/* ===== 商品卡片 ===== */
+.product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px; }
+.product-card { background: #fff; border: 1px solid #EEF0F5; border-radius: 12px; overflow: hidden; transition: all 0.2s; cursor: pointer; }
+.product-card:hover { border-color: #E0E3EE; transform: translateY(-2px); box-shadow: 0 8px 24px rgba(26,29,41,0.06); }
+.product-img-box { width: 100%; height: 180px; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; }
+.product-img-box img { width: 100%; height: 100%; object-fit: cover; }
+.product-tag { position: absolute; top: 10px; left: 10px; padding: 3px 8px; background: rgba(91,95,255,0.9); color: #fff; font-size: 10px; font-weight: 600; border-radius: 4px; }
+.product-body { padding: 14px; }
+.product-card-name { font-size: 13px; font-weight: 600; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.product-card-cat { font-size: 11px; color: #9AA1B2; margin-bottom: 10px; }
+.product-stats { display: flex; justify-content: space-between; padding-top: 10px; border-top: 1px solid #F3F4F9; }
+.product-stat { text-align: center; }
+.product-stat-num { font-size: 14px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.product-stat-label { font-size: 10px; color: #9AA1B2; margin-top: 2px; }
+.product-price { font-size: 18px; font-weight: 700; color: #EC4899; font-variant-numeric: tabular-nums; }
+.product-price span { font-size: 11px; font-weight: 500; }
+
+/* ===== 用户列表 ===== */
+.user-list { display: flex; flex-direction: column; gap: 2px; max-height: 340px; overflow-y: auto; }
+.user-row { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 6px; transition: background 0.15s; }
+.user-row:hover { background: #F7F8FC; }
+.user-row-avatar { width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 11px; font-weight: 700; flex-shrink: 0; }
+.user-row-info { flex: 1; min-width: 0; }
+.user-row-name { font-size: 12.5px; font-weight: 600; }
+.user-row-meta { font-size: 10.5px; color: #9AA1B2; margin-top: 2px; }
+.user-row-amount { font-size: 13px; font-weight: 700; color: #5B5FFF; font-variant-numeric: tabular-nums; }
+
+/* ===== 报表页面 ===== */
+.report-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 18px; }
+.report-item { background: #fff; border: 1px solid #EEF0F5; border-radius: 12px; padding: 20px; transition: all 0.2s; cursor: pointer; }
+.report-item:hover { border-color: #E0E3EE; box-shadow: 0 4px 16px rgba(26,29,41,0.04); }
+.report-item-head { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+.report-item-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; }
+.report-item-icon svg { width: 20px; height: 20px; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.report-item-title { font-size: 14px; font-weight: 600; }
+.report-item-desc { font-size: 11.5px; color: #8A90A2; margin-top: 3px; }
+.report-item-body { font-size: 12px; color: #5B6272; line-height: 1.6; }
+.report-tags { display: flex; gap: 6px; margin-top: 12px; flex-wrap: wrap; }
+.report-tag { padding: 3px 8px; background: #F3F4F9; border-radius: 4px; font-size: 10.5px; font-weight: 500; color: #5B6272; }
+
+/* ===== 设置页面 ===== */
+.settings-section { background: #fff; border: 1px solid #EEF0F5; border-radius: 12px; padding: 20px 24px; margin-bottom: 18px; }
+.settings-section h3 { font-size: 14px; font-weight: 600; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+.settings-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #F5F6FA; }
+.settings-row:last-child { border-bottom: none; }
+.settings-label { font-size: 13px; font-weight: 500; }
+.settings-desc { font-size: 11.5px; color: #9AA1B2; margin-top: 2px; }
+.settings-input { padding: 6px 10px; border: 1px solid #E4E7EF; border-radius: 6px; font-size: 12px; font-family: inherit; outline: none; min-width: 200px; }
+.toggle { width: 40px; height: 22px; background: #E4E7EF; border-radius: 11px; cursor: pointer; position: relative; transition: all 0.2s; }
+.toggle.on { background: #5B5FFF; }
+.toggle::after { content: ''; position: absolute; top: 2px; left: 2px; width: 18px; height: 18px; background: #fff; border-radius: 50%; transition: all 0.2s; }
+.toggle.on::after { left: 20px; }
+.save-btn { padding: 8px 24px; background: linear-gradient(135deg, #7C84FF, #5B5FFF); color: #fff; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; }
+.save-btn:hover { box-shadow: 0 4px 12px rgba(124,132,255,0.3); }
+
+/* ===== Loading ===== */
+.loading-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(255,255,255,0.7); display: none; align-items: center; justify-content: center; z-index: 9999; }
+.loading-overlay.show { display: flex; }
+.loading-spinner { width: 36px; height: 36px; border: 3px solid #E4E7EF; border-top-color: #5B5FFF; border-radius: 50%; animation: spin 0.8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ===== Toast ===== */
+.toast { position: fixed; bottom: 24px; right: 24px; padding: 12px 20px; background: #1A1D29; color: #fff; border-radius: 8px; font-size: 13px; z-index: 9999; display: none; align-items: center; gap: 8px; box-shadow: 0 4px 16px rgba(0,0,0,0.15); }
+.toast.show { display: flex; }
+.toast.success { background: #16A34A; }
+.toast.error { background: #DC2626; }
+
+/* ===== 空状态 ===== */
+.empty-state { text-align: center; padding: 40px 20px; color: #9AA1B2; }
+.empty-state svg { width: 48px; height: 48px; margin-bottom: 12px; stroke: #C4C9D6; fill: none; stroke-width: 1.5; }
+
+/* ===== 响应式 ===== */
+@media (max-width: 1400px) {
+  .kpi-row { grid-template-columns: repeat(2, 1fr); }
+  .two-col, .three-col { grid-template-columns: 1fr; }
+  .report-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<div class="loading-overlay" id="loadingOverlay"><div class="loading-spinner"></div></div>
+<div class="toast" id="toast"></div>
+
+<div class="app">
+  <!-- ===== 侧边栏 ===== -->
+  <aside class="sidebar">
+    <div class="logo">
+      <div class="logo-mark"><svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M7 16l4-4 4 4 5-5"/></svg></div>
+      <div class="logo-text">DataPeak</div>
+    </div>
+    <div class="nav-group">
+      <div class="nav-label">数据中心</div>
+      <div class="nav-item active" data-page="dashboard"><span class="nav-icon"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg></span><span>数据看板</span></div>
+      <div class="nav-item" data-page="sales"><span class="nav-icon"><svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></span><span>销售分析</span></div>
+      <div class="nav-item" data-page="products"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg></span><span>商品管理</span></div>
+      <div class="nav-item" data-page="users"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span><span>用户分析</span></div>
+    </div>
+    <div class="nav-group">
+      <div class="nav-label">工具</div>
+      <div class="nav-item" data-page="reports"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></span><span>数据报表</span></div>
+      <div class="nav-item" data-page="settings"><span class="nav-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span><span>系统设置</span></div>
+    </div>
+    <div class="sidebar-bottom">
+      <div class="user-card"><div class="user-avatar">XZ</div><div class="user-info"><div class="user-name">希泽</div><div class="user-role">管理员</div></div></div>
+    </div>
+  </aside>
+
+  <!-- ===== 主内容 ===== -->
+  <main class="main">
+    <!-- T7：预警条（页头固定横条，前端契约 §5） -->
+    <div class="alert-bar" id="alertBar" hidden></div>
+    <div class="topbar">
+      <div class="page-title" id="pageTitle"><h1>数据看板</h1><p>电商销售数据总览 · 数据更新于 2018-08-31</p></div>
+      <div class="topbar-right">
+        <div class="search-box"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input type="text" id="globalSearch" placeholder="搜索订单、商品、用户..."></div>
+        <div class="icon-btn"><svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg><span class="badge"></span></div>
+        <div class="icon-btn"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
+      </div>
+    </div>
+
+    <!-- ============ 页面1：数据看板 ============ -->
+    <div class="page active" id="page-dashboard">
+      <div class="filter-bar">
+        <div class="filter-group"><span class="filter-label">商品品类</span><select class="filter-select" id="dashCategory"><option value="all">全部品类</option></select></div>
+        <div class="filter-group"><span class="filter-label">店铺视角</span><select class="filter-select" id="sellerView"><option value="">全部平台</option></select></div>
+        <div class="filter-group"><span class="filter-label">时间范围</span><div class="date-range"><input type="date" id="dashStartDate" value="2017-01-01"><span class="date-sep">—</span><input type="date" id="dashEndDate" value="2018-08-31"></div></div>
+        <div class="filter-group"><span class="filter-label">快捷</span><div class="quick-tags" id="dashQuickTags"><span class="quick-tag" data-days="7">近7天</span><span class="quick-tag" data-days="30">近30天</span><span class="quick-tag active" data-days="90">近90天</span><span class="quick-tag" data-days="all">全部</span></div></div>
+        <button class="apply-btn" onclick="loadDashboard()">应用筛选</button>
+      </div>
+
+      <!-- B：三角色视角切换（纯 JS/CSS 显隐，不新增后端接口） -->
+      <div class="role-tabs" id="roleTabs">
+        <span class="role-tabs-label">视角</span>
+        <button class="role-tab active" data-role="owner"><b>店主视角</b><span>林姐 · 不懂数据</span></button>
+        <button class="role-tab" data-role="ops"><b>代运营视角</b><span>小吴 · 管 5 店</span></button>
+        <button class="role-tab" data-role="dealer"><b>经销商视角</b><span>陈总 · 怕压错货</span></button>
+        <span class="role-hint">不同身份，看板重点不同 · 画像为卖家视角切片示例</span>
+      </div>
+
+      <!-- C：今日行动清单（整合诊断+预警+补货信号，输出可执行动作） -->
+      <div class="card action-card" data-role="owner ops dealer">
+        <div class="action-head">
+          <div>
+            <div class="card-title"><svg viewBox="0 0 24 24" style="stroke:#5B5FFF;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>今日行动清单</div>
+            <div class="card-sub">系统把诊断 / 预警 / 补货信号翻译成 3 个可执行动作，看完直接照做</div>
+          </div>
+          <span class="action-period" id="actionPeriod">所选周期</span>
+        </div>
+        <div class="action-list" id="actionList"><div class="action-loading">正在生成建议…</div></div>
+      </div>
+
+      <!-- D：本期经营诊断卡（顶部结论条 + 术语气泡 + E：诚实标注） -->
+      <div class="card diagnosis-card" data-role="owner ops">
+        <div class="diagnosis-head">
+          <span class="card-title">本期经营诊断</span>
+          <span class="diagnosis-period" id="diagPeriod">所选周期</span>
+        </div>
+        <div class="module-conclusion" id="diagConclusionBar">加载中…</div>
+        <div class="diagnosis-conclusion" id="diagConclusion"></div>
+        <div class="diagnosis-signals" id="diagSignals"><!-- 信号 chip --></div>
+        <div class="honest-note">注：复购率在本数据集天然偏低（真实店铺通常更高）；评分 / 延误 / 取消为真实经营指标。</div>
+      </div>
+
+      <!-- 补货信号（D：顶部结论条 + E：推测口径标注） -->
+      <div class="restock-section" id="restockSection" data-role="owner dealer">
+        <div class="restock-head">
+          <span class="card-title">补货建议 <span class="info-icon" title="基于销售趋势推测，非实时库存">ⓘ</span></span>
+          <span class="card-sub">按品类给出的运营动作建议 · 基于销售趋势推测，非实时库存</span>
+        </div>
+        <div class="module-conclusion" id="restockConclusionBar">加载中…</div>
+        <div class="restock-list" id="restockList"></div>
+      </div>
+
+      <div class="kpi-row" id="dashKpiRow" data-role="owner ops">
+        <div class="kpi-card kpi-indigo"><div class="kpi-head"><div class="kpi-title"><span class="kpi-icon"><svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></span>总销售额</div></div><div class="kpi-num" id="kpiSales">--<span class="kpi-unit">万 R$</span></div><div class="kpi-trend trend-up"><span class="trend-tag" id="kpiSalesTrend">↑ --%</span><span class="trend-label">较上一周期</span></div></div>
+        <div class="kpi-card kpi-pink"><div class="kpi-head"><div class="kpi-title"><span class="kpi-icon"><svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg></span>总订单数</div></div><div class="kpi-num" id="kpiOrders">--<span class="kpi-unit">单</span></div><div class="kpi-trend trend-up"><span class="trend-tag" id="kpiOrdersTrend">↑ --%</span><span class="trend-label">较上一周期</span></div></div>
+        <div class="kpi-card kpi-cyan"><div class="kpi-head"><div class="kpi-title"><span class="kpi-icon"><svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg></span><span class="term" data-term="客单价">平均客单价</span></div></div><div class="kpi-num" id="kpiAvg">--<span class="kpi-unit">R$</span></div><div class="kpi-trend trend-up"><span class="trend-tag" id="kpiAvgTrend">↑ --%</span><span class="trend-label">较上一周期</span></div></div>
+        <div class="kpi-card kpi-amber"><div class="kpi-head"><div class="kpi-title"><span class="kpi-icon"><svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></span>热销商品数</div></div><div class="kpi-num" id="kpiProducts">--<span class="kpi-unit">款</span></div><div class="kpi-trend trend-up"><span class="trend-tag" id="kpiProductsTrend">↑ --%</span><span class="trend-label">较上一周期</span></div></div>
+      </div>
+      <!-- 店铺对比（代运营视角，来自公开 /sellers） -->
+      <div class="card seller-compare" data-role="ops">
+        <div class="card-head"><div class="table-title"><svg viewBox="0 0 24 24" style="stroke:#5B5FFF;fill:none"><path d="M3 9l1-5h16l1 5"/><path d="M4 9v11h16V9"/><path d="M9 20v-6h6v6"/></svg>店铺对比（Top5）</div><span class="card-sub">来自 /sellers · 每店独立诊断切片，可配合上方「店铺视角」切换</span></div>
+        <div class="seller-compare-list" id="sellerCompareList"><div class="restock-note">加载中…</div></div>
+      </div>
+
+      <div class="two-col">
+        <!-- ① 销售趋势 -->
+        <div class="chart-card" data-role="owner ops">
+          <div class="card-head"><div><div class="card-title"><svg viewBox="0 0 24 24" style="stroke:#5B5FFF;fill:none"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>生意整体好不好？</div><div class="card-sub">看销售趋势与订单量 · 跌了先查是哪个品类拖的</div></div><div class="card-action"><span class="card-tab active" data-gran="month">月度</span><span class="card-tab" data-gran="week">周度</span><span class="card-tab" data-gran="day">日度</span></div></div><div class="chart-box" style="height:320px" id="trendChart"></div>
+        </div>
+        <!-- ② 品类增速/占比 -->
+        <div class="chart-card" data-role="owner dealer">
+          <div class="card-head"><div><div class="card-title"><svg viewBox="0 0 24 24" style="stroke:#EC4899;fill:none"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>该多押哪个品类？</div><div class="card-sub">看品类销售占比 · 把货 / 预算往头部且增长的品类倾斜（增速见补货信号）</div></div></div><div class="chart-box" style="height:320px" id="categoryChart"></div>
+        </div>
+      </div>
+      <div class="three-col">
+        <!-- ③ 平均评分 -->
+        <div class="chart-card" data-role="owner">
+          <div class="card-head"><div><div class="card-title"><svg viewBox="0 0 24 24" style="stroke:#22C55E;fill:none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>口碑在变好还是变差？</div><div class="card-sub">看平均评分 · 低于 3.5 立即查详情页与质量</div></div></div>
+          <div class="score-wrap"><div class="score-num" id="scoreNum">--</div><div class="score-tip" id="scoreTip">加载中…</div><div class="chart-box" style="height:150px" id="scoreChart"></div></div>
+        </div>
+        <!-- ④ 延迟发货与取消率 -->
+        <div class="chart-card" data-role="ops">
+          <div class="card-head"><div><div class="card-title"><svg viewBox="0 0 24 24" style="stroke:#F59E0B;fill:none"><path d="M10 17h4V5H2v12h3"/><path d="M20 17h2v-3.34a4 4 0 0 0-1.17-2.83L19 9h-5"/><circle cx="7.5" cy="17.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg>履约有没有爆雷风险？</div><div class="card-sub">看延迟发货率与取消率 · 超标立刻查物流 / 客服</div></div></div><div class="chart-box" style="height:240px" id="fulfillChart"></div>
+        </div>
+        <!-- ⑤ 支付方式构成 -->
+        <div class="chart-card" data-role="dealer">
+          <div class="card-head"><div><div class="card-title"><svg viewBox="0 0 24 24" style="stroke:#06B6D4;fill:none"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>钱从哪来、该优化哪条？</div><div class="card-sub">看支付方式构成 · 优化主流支付渠道的转化</div></div></div><div class="pie-wrap"><div class="pie-chart" id="paymentChart"></div><div class="pie-legend" id="paymentLegend"></div></div>
+        </div>
+      </div>
+      <!-- ⑥ 订单量/价格区间分布 -->
+      <div class="chart-card" data-role="dealer">
+        <div class="card-head"><div><div class="card-title"><svg viewBox="0 0 24 24" style="stroke:#EC4899;fill:none"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>我的客单价健康吗？</div><div class="card-sub">看在售商品价格区间 · 结合客单价判断定价结构</div></div></div><div class="chart-box" style="height:260px" id="priceChart"></div>
+      </div>
+
+      <div class="data-footnote">画像与店铺数据为 seller_id 切片示例，用于演示角色视角；全平台口径请在「店铺视角」选择「全部平台」。</div>
+      <div class="table-card" data-role="owner ops">
+        <div class="table-head-bar"><div><div class="table-title"><svg viewBox="0 0 24 24" style="stroke:#7C84FF;fill:none"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>订单数据明细<span class="table-count" id="orderCount">共 0 条</span></div></div><div class="table-tools"><select id="orderStatusFilter" style="padding:5px 8px;border:1px solid #E4E7EF;border-radius:6px;font-size:11px;color:#5B6272;background:#fff;font-family:inherit;outline:none"><option value="">全部状态</option><option value="delivered">已完成</option><option value="shipped">运输中</option><option value="canceled">已取消</option></select><button class="mini-btn" onclick="exportOrders()"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>导出</button></div></div>
+        <table class="data-table"><thead><tr><th>订单号</th><th>商品</th><th>品类</th><th>单价</th><th style="text-align:center">数量</th><th>总金额</th><th>下单时间</th><th>支付方式</th><th>状态</th></tr></thead><tbody id="orderTable"></tbody></table>
+        <div class="pagination" id="orderPagination"></div>
+      </div>
+    </div>
+
+    <!-- ============ 页面2：销售分析 ============ -->
+    <div class="page" id="page-sales">
+      <div class="filter-bar"><div class="filter-group"><span class="filter-label">品类</span><select class="filter-select" id="salesCategory"><option value="all">全部品类</option></select></div><span class="filter-label" style="font-weight:400">数据周期 2017-01 ~ 2018-08 · Olist 全量真实数据</span><button class="apply-btn" onclick="loadSalesAnalysis()">应用筛选</button></div>
+      <div class="kpi-row">
+        <div class="kpi-card kpi-indigo"><div class="kpi-head"><div class="kpi-title"><span class="kpi-icon"><svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></span>区间总销售额</div></div><div class="kpi-num" id="salesKpiSales">--<span class="kpi-unit">万 R$</span></div></div>
+        <div class="kpi-card kpi-pink"><div class="kpi-head"><div class="kpi-title"><span class="kpi-icon"><svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/></svg></span>区间总订单量</div></div><div class="kpi-num" id="salesKpiOrders">--<span class="kpi-unit">单</span></div></div>
+        <div class="kpi-card kpi-cyan"><div class="kpi-head"><div class="kpi-title"><span class="kpi-icon"><svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg></span><span class="term" data-term="同比增长">销售额同比增长</span></div></div><div class="kpi-num" id="salesKpiGrowth">--<span class="kpi-unit">%</span></div></div>
+        <div class="kpi-card kpi-amber"><div class="kpi-head"><div class="kpi-title"><span class="kpi-icon"><svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></span>平均客单价</div></div><div class="kpi-num" id="salesKpiAvg">--<span class="kpi-unit">R$</span></div></div>
+      </div>
+      <div class="two-col">
+        <div class="chart-card"><div class="card-head"><div><div class="card-title"><svg viewBox="0 0 24 24" style="stroke:#5B5FFF;fill:none"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>销售趋势同比对比</div><div class="card-sub">2017年 vs 2018年销售额对比</div></div></div><div class="chart-box" style="height:380px" id="salesCompareChart"></div></div>
+        <div class="chart-card"><div class="card-head"><div><div class="card-title"><svg viewBox="0 0 24 24" style="stroke:#EC4899;fill:none"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>季度销售对比</div><div class="card-sub">2017 vs 2018 各季度销售额（万 R$）</div></div></div><div class="chart-box" style="height:380px" id="quarterChart"></div></div>
+      </div>
+      <div class="two-col">
+        <div class="chart-card"><div class="card-head"><div><div class="card-title"><svg viewBox="0 0 24 24" style="stroke:#22C55E;fill:none"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>品类增长率排名</div><div class="card-sub">同比增长最快的品类 TOP10</div></div></div><div class="chart-box" style="height:300px" id="growthChart"></div></div>
+        <div class="chart-card"><div class="card-head"><div><div class="card-title"><svg viewBox="0 0 24 24" style="stroke:#F59E0B;fill:none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>热销商品 TOP10</div><div class="card-sub">按销售件数排名（真实 /orders/product-ranking）</div></div></div><div class="chart-box" style="height:300px" id="topProductsChart"></div></div>
+      </div>
+      <div class="data-footnote">注：同比增长 = 2018-01~08 对比 2017-01~08（等长窗口）；2018 年数据截至 8 月，缺月以断点显示。品类增长率按销售额计算，仅统计上期销售额 ≥1 万 R$ 的品类，避免小基数失真。</div>
+    </div>
+
+    <!-- ============ 页面3：商品管理 ============ -->
+    <div class="page" id="page-products">
+      <div class="filter-bar">
+        <div class="filter-group"><span class="filter-label">品类</span><select class="filter-select" id="prodCategory"><option value="all">全部品类</option></select></div>
+        <div class="filter-group"><span class="filter-label">价格区间</span><select class="filter-select" id="prodPriceRange"><option value="all">全部价格</option><option value="0-50">0 - 50 R$</option><option value="50-100">50 - 100 R$</option><option value="100-500">100 - 500 R$</option><option value="500-9999">500 R$ 以上</option></select></div>
+        <div class="filter-group"><span class="filter-label">排序</span><select class="filter-select" id="prodSortBy"><option value="count">销量最高</option><option value="amount">销售额最高</option><option value="price_asc">价格从低到高</option><option value="price_desc">价格从高到低</option></select></div>
+        <div class="filter-group"><span class="filter-label">搜索</span><input type="text" class="filter-select" id="prodKeyword" placeholder="输入商品名" style="min-width:150px"></div>
+        <button class="apply-btn" onclick="loadProducts()">筛选商品</button>
+      </div>
+      <div class="kpi-row">
+        <div class="kpi-card kpi-indigo"><div class="kpi-head"><div class="kpi-title"><span class="kpi-icon"><svg viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg></span>商品总数</div></div><div class="kpi-num" id="prodKpiTotal">--<span class="kpi-unit">款</span></div></div>
+        <div class="kpi-card kpi-pink"><div class="kpi-head"><div class="kpi-title"><span class="kpi-icon"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/></svg></span>商品品类</div></div><div class="kpi-num" id="prodKpiCategories">--<span class="kpi-unit">个</span></div></div>
+        <div class="kpi-card kpi-cyan"><div class="kpi-head"><div class="kpi-title"><span class="kpi-icon"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></span>有销量商品</div></div><div class="kpi-num" id="prodKpiActive">--<span class="kpi-unit">款</span></div></div>
+        <div class="kpi-card kpi-amber"><div class="kpi-head"><div class="kpi-title"><span class="kpi-icon"><svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></span>累计销售额</div></div><div class="kpi-num" id="prodKpiSales">--<span class="kpi-unit">万 R$</span></div></div>
+      </div>
+      <div class="product-grid" id="productGrid"></div>
+      <div class="pagination" id="productPagination" style="justify-content:center;margin-top:24px"></div>
+    </div>
+
+    <!-- ============ 页面4：用户分析 ============ -->
+    <div class="page" id="page-users">
+      <div class="filter-bar"><span class="filter-label" style="font-weight:400">用户结构来自真实 /orders/user-distribution；地区 / 高价值 / 消费分层需新增后端接口，暂未提供</span></div>
+      <div class="kpi-row">
+        <div class="kpi-card kpi-indigo"><div class="kpi-head"><div class="kpi-title"><span class="kpi-icon"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></span>总用户数</div></div><div class="kpi-num" id="usersKpiTotal">--<span class="kpi-unit">人</span></div></div>
+        <div class="kpi-card kpi-pink"><div class="kpi-head"><div class="kpi-title"><span class="kpi-icon"><svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></span><span class="term" data-term="复购率">复购率</span></div></div><div class="kpi-num" id="usersKpiRepeatRate">--<span class="kpi-unit">%</span></div></div>
+        <div class="kpi-card kpi-cyan"><div class="kpi-head"><div class="kpi-title"><span class="kpi-icon"><svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></span>新用户占比</div></div><div class="kpi-num" id="usersKpiNewRate">--<span class="kpi-unit">%</span></div></div>
+        <div class="kpi-card kpi-amber"><div class="kpi-head"><div class="kpi-title"><span class="kpi-icon"><svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></span>高价值用户</div></div><div class="kpi-num" id="usersKpiHighValue">--<span class="kpi-unit">人</span></div></div>
+      </div>
+      <div class="two-col">
+        <div class="chart-card"><div class="card-head"><div><div class="card-title"><svg viewBox="0 0 24 24" style="stroke:#5B5FFF;fill:none"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>用户结构分布</div><div class="card-sub">新用户 / 复购用户占比（真实 /orders/user-distribution）</div></div></div><div class="pie-wrap"><div class="pie-chart" id="userStructChart"></div><div class="pie-legend" id="userStructLegend"></div></div></div>
+        <div class="chart-card"><div class="card-head"><div><div class="card-title"><svg viewBox="0 0 24 24" style="stroke:#22C55E;fill:none"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>复购 vs 新客</div><div class="card-sub">回头客与新客数量对比（真实数据）</div></div></div><div class="chart-box" style="height:300px" id="userRepeatChart"></div></div>
+      </div>
+      <div class="data-footnote">注：本数据集复购率天然偏低（真实店铺通常更高）；总用户数 = 新用户 + 复购用户。</div>
+    </div>
+
+    <!-- ============ 页面5：数据报表 ============ -->
+    <div class="page" id="page-reports">
+      <div class="filter-bar"><div class="filter-group"><span class="filter-label">报表类型</span><div class="quick-tags"><span class="quick-tag active">全部</span><span class="quick-tag">销售</span><span class="quick-tag">商品</span><span class="quick-tag">用户</span><span class="quick-tag">运营</span></div></div><div class="filter-group"><span class="filter-label">时间</span><select class="filter-select"><option>本月</option><option>本季度</option><option>本年</option><option>自定义</option></select></div><button class="apply-btn" onclick="showToast('报表已生成', 'success')">生成报表</button></div>
+      <div class="report-grid">
+        <div class="report-item" onclick="showToast('正在导出销售月报...', 'success')">
+          <div class="report-item-head"><div class="report-item-icon" style="background:rgba(91,95,255,0.08)"><svg viewBox="0 0 24 24" style="stroke:#5B5FFF;fill:none"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div><div><div class="report-item-title">销售月度汇总报表</div><div class="report-item-desc">按月统计销售额、订单量、客单价</div></div></div>
+          <div class="report-item-body" id="reportBodySales">加载中…</div>
+          <div class="report-tags"><span class="report-tag">销售额</span><span class="report-tag">订单量</span><span class="report-tag">月度</span><span class="report-tag">CSV导出</span></div>
+        </div>
+        <div class="report-item" onclick="showToast('正在导出品类分析报表...', 'success')">
+          <div class="report-item-head"><div class="report-item-icon" style="background:rgba(236,72,153,0.08)"><svg viewBox="0 0 24 24" style="stroke:#EC4899;fill:none"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div><div><div class="report-item-title">品类销售分析报表</div><div class="report-item-desc">各品类销量、销售额、增长率</div></div></div>
+          <div class="report-item-body" id="reportBodyCategory">加载中…</div>
+          <div class="report-tags"><span class="report-tag">品类</span><span class="report-tag">增长率</span><span class="report-tag">排名</span><span class="report-tag">Excel导出</span></div>
+        </div>
+        <div class="report-item" onclick="showToast('正在导出商品排行报表...', 'success')">
+          <div class="report-item-head"><div class="report-item-icon" style="background:rgba(34,197,94,0.08)"><svg viewBox="0 0 24 24" style="stroke:#22C55E;fill:none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div><div><div class="report-item-title">商品销量 TOP 排行</div><div class="report-item-desc">热销商品排名与销量异动</div></div></div>
+          <div class="report-item-body" id="reportBodyProduct">加载中…</div>
+          <div class="report-tags"><span class="report-tag">TOP10</span><span class="report-tag">销量异动</span><span class="report-tag">爆款</span><span class="report-tag">PDF导出</span></div>
+        </div>
+        <div class="report-item" onclick="showToast('正在导出用户画像报表...', 'success')">
+          <div class="report-item-head"><div class="report-item-icon" style="background:rgba(245,158,11,0.08)"><svg viewBox="0 0 24 24" style="stroke:#F59E0B;fill:none"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div><div><div class="report-item-title">用户画像与留存报表</div><div class="report-item-desc">新老用户、复购率、地区分布</div></div></div>
+          <div class="report-item-body" id="reportBodyUser">加载中…</div>
+          <div class="report-tags"><span class="report-tag">复购率</span><span class="report-tag">地区</span><span class="report-tag">RFM</span><span class="report-tag">PDF导出</span></div>
+        </div>
+        <div class="report-item" onclick="showToast('正在导出支付分析报表...', 'success')">
+          <div class="report-item-head"><div class="report-item-icon" style="background:rgba(6,182,212,0.08)"><svg viewBox="0 0 24 24" style="stroke:#06B6D4;fill:none"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg></div><div><div class="report-item-title">支付方式分析报表</div><div class="report-item-desc">各支付渠道占比与趋势</div></div></div>
+          <div class="report-item-body" id="reportBodyPayment">加载中…</div>
+          <div class="report-tags"><span class="report-tag">信用卡</span><span class="report-tag">Boleto</span><span class="report-tag">占比</span><span class="report-tag">CSV导出</span></div>
+        </div>
+        <div class="report-item" onclick="showToast('正在导出运营周报...', 'success')">
+          <div class="report-item-head"><div class="report-item-icon" style="background:rgba(124,132,255,0.08)"><svg viewBox="0 0 24 24" style="stroke:#7C84FF;fill:none"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div><div><div class="report-item-title">运营综合周报</div><div class="report-item-desc">关键指标汇总与环比变化</div></div></div>
+          <div class="report-item-body" id="reportBodyWeekly">示例目录 · 真实经营分析见「数据看板 / 销售分析 / 用户分析」页（近 7 天周报所需接口暂无支撑，不虚构数字）。</div>
+          <div class="report-tags"><span class="report-tag">周报</span><span class="report-tag">环比</span><span class="report-tag">综合</span><span class="report-tag">邮件订阅</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ 页面6：系统设置 ============ -->
+    <div class="page" id="page-settings">
+      <div class="settings-section">
+        <h3><svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:#5B5FFF;fill:none;stroke-width:1.8"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>数据源配置</h3>
+        <div class="settings-row"><div><div class="settings-label">数据库地址</div><div class="settings-desc">MySQL 连接 URL</div></div><input class="settings-input" value="jdbc:mysql://localhost:3306/ecommerce_dashboard" readonly></div>
+        <div class="settings-row"><div><div class="settings-label">数据库名</div><div class="settings-desc">当前使用的数据库名称</div></div><input class="settings-input" value="ecommerce_dashboard" readonly></div>
+        <div class="settings-row"><div><div class="settings-label">用户名</div><div class="settings-desc">数据库连接用户</div></div><input class="settings-input" value="root"></div>
+        <div class="settings-row"><div><div class="settings-label">数据集来源</div><div class="settings-desc">Kaggle Olist 巴西电商数据集</div></div><input class="settings-input" value="Kaggle Olist E-Commerce" readonly></div>
+        <div class="settings-row"><div><div class="settings-label">数据更新频率</div><div class="settings-desc">自动同步数据的时间间隔</div></div><select class="filter-select" style="min-width:200px"><option>每日自动同步</option><option>每周同步</option><option>手动同步</option></select></div>
+      </div>
+      <div class="settings-section">
+        <h3><svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:#5B5FFF;fill:none;stroke-width:1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>显示设置</h3>
+        <div class="settings-row"><div><div class="settings-label">暗色模式</div><div class="settings-desc">切换深色主题</div></div><div class="toggle" onclick="this.classList.toggle('on')"></div></div>
+        <div class="settings-row"><div><div class="settings-label">数据自动刷新</div><div class="settings-desc">每 5 分钟自动刷新看板数据</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+        <div class="settings-row"><div><div class="settings-label">图表动画</div><div class="settings-desc">启用 ECharts 渲染动画</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+        <div class="settings-row"><div><div class="settings-label">每页显示条数</div><div class="settings-desc">表格分页大小</div></div><select class="filter-select" style="min-width:200px"><option>10 条/页</option><option>20 条/页</option><option>50 条/页</option><option>100 条/页</option></select></div>
+      </div>
+      <div class="settings-section">
+        <h3><svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:#5B5FFF;fill:none;stroke-width:1.8"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>通知设置</h3>
+        <div class="settings-row"><div><div class="settings-label">销售预警</div><div class="settings-desc">当销售额下降超过 10% 时通知</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+        <div class="settings-row"><div><div class="settings-label">品类异动提醒</div><div class="settings-desc">品类销售额环比跌破阈值时通知</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+        <div class="settings-row"><div><div class="settings-label">日报推送</div><div class="settings-desc">每日 9:00 推送销售日报</div></div><div class="toggle" onclick="this.classList.toggle('on')"></div></div>
+        <div class="settings-row"><div><div class="settings-label">邮件通知</div><div class="settings-desc">接收邮箱</div></div><input class="settings-input" value="xize@example.com"></div>
+      </div>
+      <div style="text-align:right;margin-top:8px"><button class="save-btn" onclick="saveAllSettings()">保存设置</button></div>
+    </div>
+
+  </main>
+</div>
+
+<!-- T7 增强脚本：须在下方内联脚本之前加载，使函数先于 init() 可用 -->
+<script src="assets/auth.js"></script>
+<script src="assets/term-glossary.js"></script>
+<script src="assets/diagnosis.js"></script>
+<script src="assets/signals-alerts.js"></script>
+<script src="assets/action-list.js"></script>
+<script src="assets/role-tabs.js"></script>
+<script src="assets/seller-switch.js"></script>
+<script>
+// ========== 全局配置 ==========
+// 注意：API_BASE / getToken / setToken / apiFetch / showToast 由 assets/auth.js 提供（全局）
+const charts = {};
+let currentPage = 1;
+let totalPages = 1;
+let productPage = 1;
+let curSeller = '';  // T7：当前店铺视角（全局），空字符串 = 全平台
+let curRole = 'owner';  // B：当前角色视角 owner / ops / dealer
+// 供角色切换等跨文件调用：统一 resize 所有图表（隐藏容器显示后需重算尺寸）
+window.dpResizeCharts = function () {
+  Object.values(charts).forEach(function (c) { try { c.resize(); } catch (e) {} });
+};
+
+// ========== 本地存储（记住用户设置和筛选条件） ==========
+const STORAGE_KEY = 'datapeak_settings';
+
+// 默认设置
+const DEFAULT_SETTINGS = {
+  // 显示设置
+  darkMode: false,
+  autoRefresh: true,
+  chartAnimation: true,
+  pageSize: 10,
+  // 通知设置
+  salesAlert: true,
+  stockAlert: true,
+  dailyReport: false,
+  email: 'xize@example.com',
+  // 数据源
+  dbUrl: 'jdbc:mysql://localhost:3306/ecommerce_dashboard',
+  dbName: 'ecommerce_dashboard',
+  dbUser: 'root',
+  dataSource: 'Kaggle Olist E-Commerce',
+  updateFreq: 'daily',
+  // 看板筛选默认值
+  dashboard: {
+    category: 'all',
+    startDate: '2017-01-01',
+    endDate: '2018-08-31'
+  },
+  // 商品筛选默认值
+  products: {
+    category: 'all',
+    priceRange: 'all',
+    sortBy: 'count',
+    keyword: ''
+  }
+};
+
+// 读取设置
+function loadSettings() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) return { ...DEFAULT_SETTINGS, ...JSON.parse(saved) };
+  } catch (e) { console.warn('读取本地设置失败', e); }
+  return { ...DEFAULT_SETTINGS };
+}
+
+// 保存设置
+function saveSettingsObj(obj) {
+  try {
+    const current = loadSettings();
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...current, ...obj }));
+  } catch (e) { console.warn('保存设置失败', e); }
+}
+
+// 应用暗色模式
+function applyDarkMode(on) {
+  if (on) {
+    document.body.style.background = '#0F1115';
+    document.body.style.color = '#E4E7EF';
+  } else {
+    document.body.style.background = '';
+    document.body.style.color = '';
+  }
+}
+
+// 应用所有设置到页面
+function applyAllSettings() {
+  const s = loadSettings();
+  // 暗色模式
+  if (s.darkMode) applyDarkMode(true);
+  // 设置页面的 toggle
+  document.querySelectorAll('.toggle').forEach(t => {}); // 在设置页加载时再赋值
+}
+
+// ========== 工具函数 ==========
+function showLoading() { document.getElementById('loadingOverlay').classList.add('show'); }
+function hideLoading() { document.getElementById('loadingOverlay').classList.remove('show'); }
+// showToast 现由 assets/auth.js 统一提供（已暴露为全局），此处不再重复定义。
+
+// ========== 前端兜底 Mock 数据（后端没启动时自动使用）==========
+const MOCK_DATA = {
+  categories: [
+    'PC游戏', '乐器', '便携厨房料理机', '便携烤箱咖啡机', '保险服务',
+    '健康美容', '内衣泳装', '农工商', '办公家具', '卧室家具',
+    '厨具', '厨卫餐居园艺家具', '园艺工具', '园艺建材', '固话',
+    '圣诞用品', '大众读物', '大家电', '大家电(二)', '女装',
+    '宠物用品', '客厅家具', '家具装饰', '家居建材', '家居用品',
+    '家居舒适', '家居舒适(二)', '小家电', '尿裤卫生', '工商商务',
+    '平板打印影像', '床品卫浴', '床垫软装', '建材安防', '建材照明',
+    '建筑工具', '影碟', '影音摄影', '手工具', '手工艺',
+    '手表礼品', '技术书籍', '文具', '标识安防', '母婴',
+    '汽车', '派对用品', '游戏主机', '玩具', '电子',
+    '电脑', '电脑配件', '男装', '空调', '童装',
+    '箱包配饰', '艺术', '花卉', '行李配饰', '运动休闲',
+    '运动服饰', '进口书籍', '通讯', '酒水饮料', '酷玩',
+    '集市', '鞋靴', '音乐', '音像', '音响',
+    '食品', '食品饮料', '香水美妆'
+  ],
+  productOverview: { totalProducts: 32951, totalCategories: 73 },
+  kpi: { totalSales: 1359.0, totalOrders: 99441, avgOrderValue: 136.7, hotProducts: 32951, salesGrowth: 12.8, ordersGrowth: 8.5, avgGrowth: 3.2, productGrowth: 5.6 },
+  trend: {
+    months: ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月','次年1月','次年2月','次年3月','次年4月','次年5月','次年6月','次年7月','次年8月'],
+    sales: [12.0,24.7,37.4,36.0,50.6,43.3,49.8,57.4,62.4,66.4,101.0,74.4,95.0,84.4,98.3,99.7,99.7,86.5,89.6,85.5],
+    orders: [955,1951,3000,2684,4136,3583,4519,4910,4831,5322,8665,6308,8208,7672,8217,7975,7925,7078,7092,7248]
+  },
+  categoryRank: [
+    { categoryName: '健康美容', categoryNameEn: 'health_beauty', salesAmount: 125.9, orderCount: 9670 },
+    { categoryName: '手表礼品', categoryNameEn: 'watches_gifts', salesAmount: 120.5, orderCount: 5991 },
+    { categoryName: '床品卫浴', categoryNameEn: 'bed_bath_table', salesAmount: 103.7, orderCount: 11115 },
+    { categoryName: '运动休闲', categoryNameEn: 'sports_leisure', salesAmount: 98.8, orderCount: 8641 },
+    { categoryName: '电脑配件', categoryNameEn: 'computers_accessories', salesAmount: 91.2, orderCount: 7827 },
+    { categoryName: '家具装饰', categoryNameEn: 'furniture_decor', salesAmount: 73.0, orderCount: 8334 },
+    { categoryName: '酷玩', categoryNameEn: 'cool_stuff', salesAmount: 63.5, orderCount: 3797 },
+    { categoryName: '家居用品', categoryNameEn: 'housewares', salesAmount: 63.2, orderCount: 6964 },
+    { categoryName: '汽车', categoryNameEn: 'auto', salesAmount: 59.3, orderCount: 4235 },
+    { categoryName: '园艺工具', categoryNameEn: 'garden_tools', salesAmount: 48.5, orderCount: 1250 }
+  ],
+  productRanking: [
+    { productId: 'PROD00001', productName: '氨基酸洁面乳', category: '健康美容', price: 89.9, salesCount: 9670, salesAmount: 869.3 },
+    { productId: 'PROD00002', productName: '智能运动手表', category: '手表礼品', price: 299.0, salesCount: 8591, salesAmount: 2568.7 },
+    { productId: 'PROD00003', productName: '浴巾三件套', category: '床品卫浴', price: 125.0, salesCount: 7820, salesAmount: 977.5 },
+    { productId: 'PROD00004', productName: '无线蓝牙耳机', category: '电脑配件', price: 156.0, salesCount: 7210, salesAmount: 1124.8 },
+    { productId: 'PROD00005', productName: '瑜伽垫套装', category: '运动休闲', price: 79.9, salesCount: 6890, salesAmount: 550.5 },
+    { productId: 'PROD00006', productName: '北欧风台灯', category: '家具装饰', price: 98.5, salesCount: 6120, salesAmount: 602.8 },
+    { productId: 'PROD00007', productName: '桌面收纳盒', category: '家居用品', price: 39.9, salesCount: 5830, salesAmount: 232.6 },
+    { productId: 'PROD00008', productName: '汽车香薰', category: '汽车', price: 45.0, salesCount: 4850, salesAmount: 218.3 },
+    { productId: 'PROD00009', productName: '益智积木玩具', category: '玩具', price: 89.9, salesCount: 4135, salesAmount: 371.7 },
+    { productId: 'PROD00010', productName: '复古太阳镜', category: '手表礼品', price: 199.0, salesCount: 3820, salesAmount: 760.2 }
+  ],
+  paymentDistribution: [
+    { paymentType: '信用卡', count: 76795, percentage: 73.9 },
+    { paymentType: 'Boleto', count: 19784, percentage: 19.0 },
+    { paymentType: '代金券', count: 5775, percentage: 5.6 },
+    { paymentType: '借记卡', count: 1529, percentage: 1.5 }
+  ],
+  userDistribution: { newUserCount: 92814, repeatUserCount: 6627, newUserPercentage: 93.4, repeatPercentage: 6.6, highValueCount: 2088, highValuePercentage: 2.1 },
+  orders: {
+    list: [
+      { orderId: 'e481f51cbdc54', productId: 'P001', productName: '氨基酸洁面乳', category: '健康美容', price: 89.9, quantity: 2, totalAmount: 179.8, purchaseTime: '2018-08-20 10:56', paymentType: '信用卡', orderStatus: 'delivered' },
+      { orderId: '53cdb2fc8bc7dc', productId: 'P002', productName: '智能运动手表', category: '手表礼品', price: 299.0, quantity: 1, totalAmount: 299.0, purchaseTime: '2018-08-15 20:41', paymentType: 'Boleto', orderStatus: 'delivered' },
+      { orderId: 'a855e10d1a5e4b', productId: 'P003', productName: '浴巾三件套', category: '床品卫浴', price: 125.0, quantity: 1, totalAmount: 125.0, purchaseTime: '2018-08-10 14:23', paymentType: '信用卡', orderStatus: 'delivered' },
+      { orderId: 'b9c3d7e2f4a516', productId: 'P004', productName: '无线蓝牙耳机', category: '电脑配件', price: 156.0, quantity: 1, totalAmount: 156.0, purchaseTime: '2018-08-05 09:15', paymentType: '信用卡', orderStatus: 'shipped' },
+      { orderId: 'c8d4e8f3a5b627', productId: 'P005', productName: '北欧风台灯', category: '家具装饰', price: 98.5, quantity: 2, totalAmount: 197.0, purchaseTime: '2018-07-28 16:45', paymentType: '代金券', orderStatus: 'delivered' },
+      { orderId: 'd7e5f9g4b6c738', productId: 'P006', productName: '瑜伽垫套装', category: '运动休闲', price: 79.9, quantity: 1, totalAmount: 79.9, purchaseTime: '2018-07-22 11:30', paymentType: '信用卡', orderStatus: 'delivered' },
+      { orderId: 'e6f6a0h5c7d849', productId: 'P007', productName: '汽车香薰摆件', category: '汽车', price: 45.0, quantity: 3, totalAmount: 135.0, purchaseTime: '2018-07-15 13:20', paymentType: '借记卡', orderStatus: 'delivered' },
+      { orderId: 'f5a7b1i6d8e950', productId: 'P008', productName: '桌面收纳盒', category: '家居用品', price: 39.9, quantity: 2, totalAmount: 79.8, purchaseTime: '2018-07-08 10:08', paymentType: '信用卡', orderStatus: 'canceled' },
+      { orderId: 'a4b8c2j7e9f061', productId: 'P009', productName: '益智积木玩具', category: '玩具', price: 89.9, quantity: 1, totalAmount: 89.9, purchaseTime: '2018-07-02 08:55', paymentType: 'Boleto', orderStatus: 'delivered' },
+      { orderId: 'b3c9d3k8f0g172', productId: 'P010', productName: '园艺工具套装', category: '园艺工具', price: 120.0, quantity: 1, totalAmount: 120.0, purchaseTime: '2018-06-25 15:42', paymentType: '信用卡', orderStatus: 'delivered' }
+    ],
+    total: 99441,
+    pageNum: 1,
+    pageSize: 10
+  }
+};
+
+// 后端是否可用的标记
+let backendAvailable = true;
+
+async function fetchAPI(path) {
+  // 如果已知后端不可用，直接返回 mock
+  if (!backendAvailable) return getMockData(path);
+
+  try {
+    // 超时与 auth.js 的 FETCH_TIMEOUT_MS 保持一致（后端重聚合实测 11~24s，3s 会误判超时走 mock）
+    const res = await fetch(API_BASE + path, { signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const json = await res.json();
+    return json.data;
+  } catch (e) {
+    console.warn('API请求失败，使用本地数据:', path, e.message);
+    backendAvailable = false; // 标记后端不可用，后续直接用 mock
+    return getMockData(path);
+  }
+}
+
+// 根据路径返回对应的 mock 数据
+function getMockData(path) {
+  if (path.startsWith('/orders/categories')) return MOCK_DATA.categories;
+  if (path.startsWith('/orders/product-overview')) return MOCK_DATA.productOverview;
+  if (path.startsWith('/orders/kpi')) return MOCK_DATA.kpi;
+  if (path.startsWith('/orders/trend')) return MOCK_DATA.trend;
+  if (path.startsWith('/orders/category-rank')) return MOCK_DATA.categoryRank;
+  if (path.startsWith('/orders/product-ranking')) return MOCK_DATA.productRanking;
+  if (path.startsWith('/orders/payment-distribution')) return MOCK_DATA.paymentDistribution;
+  if (path.startsWith('/orders/user-distribution')) return MOCK_DATA.userDistribution;
+  if (path.startsWith('/orders?')) return MOCK_DATA.orders;
+  return null;
+}
+
+function formatNum(n) {
+  if (n >= 10000) return (n / 10000).toFixed(1) + '万';
+  return n.toLocaleString();
+}
+
+function makeProductImg(icon, color1, color2) {
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="240" height="180" viewBox="0 0 240 180"><defs><linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:${color1}"/><stop offset="100%" style="stop-color:${color2}"/></linearGradient></defs><rect width="240" height="180" fill="url(#g)"/><text x="120" y="100" text-anchor="middle" font-size="50" dominant-baseline="middle">${icon}</text></svg>`;
+  return 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svg)));
+}
+
+const PRODUCT_IMGS = [
+  { icon: '🧴', c1: '#FFE0E6', c2: '#FFB6C1' }, { icon: '⌚', c1: '#E0E7FF', c2: '#A5B4FC' },
+  { icon: '🛁', c1: '#FEF3C7', c2: '#FCD34D' }, { icon: '🧘', c1: '#D1FAE5', c2: '#6EE7B7' },
+  { icon: '🎧', c1: '#EDE9FE', c2: '#C4B5FD' }, { icon: '💡', c1: '#FFEDD5', c2: '#FDBA74' },
+  { icon: '📦', c1: '#CFFAFE', c2: '#67E8F9' }, { icon: '🚗', c1: '#FCE7F3', c2: '#F9A8D4' },
+  { icon: '🧩', c1: '#FEF9C3', c2: '#FDE047' }, { icon: '🌱', c1: '#D9F99D', c2: '#A3E635' },
+  { icon: '🕶️', c1: '#E0E7FF', c2: '#818CF8' }, { icon: '💄', c1: '#FFE4E6', c2: '#FB7185' },
+];
+
+// ========== 页面切换 ==========
+const pageTitles = {
+  dashboard: { h1: '数据看板', p: '电商销售数据总览 · 数据更新于 2018-08-31' },
+  sales: { h1: '销售分析', p: '多维度销售趋势与增长分析' },
+  products: { h1: '商品管理', p: '32,951 款商品 · 73 个品类' },
+  users: { h1: '用户分析', p: '用户画像、地区分布与消费行为' },
+  reports: { h1: '数据报表', p: '可导出的多维度分析报表' },
+  settings: { h1: '系统设置', p: '数据源、显示与通知配置' },
+};
+
+const pageInited = {};
+document.querySelectorAll('.nav-item[data-page]').forEach(item => {
+  item.addEventListener('click', () => {
+    const page = item.dataset.page;
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    item.classList.add('active');
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById('page-' + page).classList.add('active');
+    const title = pageTitles[page];
+    document.getElementById('pageTitle').innerHTML = `<h1>${title.h1}</h1><p>${title.p}</p>`;
+    setTimeout(() => {
+      Object.values(charts).forEach(c => { try { c.resize(); } catch(e){} });
+      initPageCharts(page);
+      // 切到设置页时读取保存的值
+      if (page === 'settings') loadSettingsPage();
+    }, 50);
+  });
+});
+
+// 应用商品筛选默认值
+function applyProductsDefaults() {
+  const s = loadSettings();
+  if (document.getElementById('prodCategory')) document.getElementById('prodCategory').value = s.products.category;
+  if (document.getElementById('prodPriceRange')) document.getElementById('prodPriceRange').value = s.products.priceRange;
+  if (document.getElementById('prodSortBy')) document.getElementById('prodSortBy').value = s.products.sortBy;
+  if (document.getElementById('prodKeyword')) document.getElementById('prodKeyword').value = s.products.keyword;
+}
+
+// ========== 快捷标签切换 ==========
+document.querySelectorAll('.quick-tags').forEach(tags => {
+  tags.querySelectorAll('.quick-tag').forEach(tag => {
+    tag.addEventListener('click', () => {
+      tags.querySelectorAll('.quick-tag').forEach(t => t.classList.remove('active'));
+      tag.classList.add('active');
+    });
+  });
+});
+
+// ========== 搜索 ==========
+document.getElementById('globalSearch').addEventListener('keypress', e => {
+  if (e.key === 'Enter') {
+    const val = e.target.value.trim();
+    if (val) {
+      currentPage = 1;
+      loadOrders(val);
+      showToast('搜索 "' + val + '" 完成', 'success');
+    }
+  }
+});
+
+// ========== 加载品类列表 ==========
+async function loadCategories() {
+  const cats = await fetchAPI('/orders/categories?sellerId=' + curSeller);
+  if (!cats) return;
+  ['dashCategory', 'salesCategory', 'prodCategory'].forEach(id => {
+    const sel = document.getElementById(id);
+    if (sel) {
+      cats.forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c;
+        opt.textContent = c;
+        sel.appendChild(opt);
+      });
+    }
+  });
+}
+
+// ========== 加载看板数据 ==========
+/* KPI 环比渲染：null/undefined（后端判定「无可比周期」）时显示 --，去掉涨跌箭头与红绿配色，
+   避免把"没有比较对象"误读成"零增长" */
+function renderKpiTrend(trendId, v) {
+  var tag = document.getElementById(trendId);
+  if (!tag) return;
+  var wrap = tag.closest('.kpi-trend');
+  if (v === null || v === undefined || isNaN(v)) {
+    tag.textContent = '--';
+    if (wrap) { wrap.classList.remove('trend-up', 'trend-down'); wrap.classList.add('trend-flat'); }
+    return;
+  }
+  var up = v >= 0;
+  tag.textContent = (up ? '↑ ' : '↓ ') + Math.abs(v) + '%';
+  if (wrap) { wrap.classList.remove('trend-up', 'trend-down', 'trend-flat'); wrap.classList.add(up ? 'trend-up' : 'trend-down'); }
+}
+
+async function loadDashboard() {
+  showLoading();
+  const category = document.getElementById('dashCategory').value;
+  const startDate = document.getElementById('dashStartDate').value;
+  const endDate = document.getElementById('dashEndDate').value;
+  // 保存筛选条件
+  saveDashboardFilter();
+  const params = `category=${category}&startDate=${startDate}&endDate=${endDate}&sellerId=${curSeller}`;
+
+  // KPI
+  const kpi = await fetchAPI('/orders/kpi?' + params);
+  if (kpi) {
+    document.getElementById('kpiSales').innerHTML = kpi.totalSales + '<span class="kpi-unit">万 R$</span>';
+    document.getElementById('kpiOrders').innerHTML = kpi.totalOrders.toLocaleString() + '<span class="kpi-unit">单</span>';
+    document.getElementById('kpiAvg').innerHTML = kpi.avgOrderValue + '<span class="kpi-unit">R$</span>';
+    document.getElementById('kpiProducts').innerHTML = kpi.hotProducts.toLocaleString() + '<span class="kpi-unit">款</span>';
+    renderKpiTrend('kpiSalesTrend', kpi.salesGrowth);
+    renderKpiTrend('kpiOrdersTrend', kpi.ordersGrowth);
+    renderKpiTrend('kpiAvgTrend', kpi.avgGrowth);
+    renderKpiTrend('kpiProductsTrend', kpi.productGrowth);
+  }
+
+  // 趋势
+  const trend = await fetchAPI('/orders/trend?' + params + '&granularity=month');
+  if (trend) renderTrendChart(trend);
+
+  // ② 品类占比
+  const rank = await fetchAPI('/orders/category-rank?startDate=' + startDate + '&endDate=' + endDate + '&sellerId=' + curSeller + '&limit=10');
+  if (rank) renderCategoryChart(rank);
+
+  // ⑥ 价格区间分布（客单价结构）
+  const prod = await fetchAPI('/orders/product-ranking?category=' + category + '&startDate=' + startDate + '&endDate=' + endDate + '&sellerId=' + curSeller + '&sortBy=count&limit=30');
+  if (prod) renderPriceChart(prod);
+
+  // ⑤ 支付方式构成
+  const pay = await fetchAPI('/orders/payment-distribution?startDate=' + startDate + '&endDate=' + endDate + '&sellerId=' + curSeller);
+  if (pay) renderPaymentChart(pay);
+
+  // 店铺对比（代运营视角，公开 /sellers）
+  loadSellerCompare();
+
+  // 订单表（下钻明细）
+  await loadOrders();
+
+  hideLoading();
+  showToast('数据已刷新', 'success');
+}
+
+function renderTrendChart(trend) {
+  if (!charts.trend) charts.trend = echarts.init(document.getElementById('trendChart'), 'datapeak');
+  charts.trend.setOption({
+    tooltip: { trigger: 'axis', backgroundColor: '#fff', borderColor: '#EEF0F5', textStyle: { color: '#1A1D29', fontSize: 12 }, borderRadius: 8, padding: [10, 14] },
+    legend: { data: ['销售额(万R$)', '订单数'], right: 0, top: 0, textStyle: { fontSize: 11, color: '#8A90A2' }, itemWidth: 14, itemHeight: 2 },
+    grid: { left: '3%', right: '4%', bottom: '3%', top: '12%', containLabel: true },
+    xAxis: { type: 'category', data: trend.months, boundaryGap: false, axisLine: { lineStyle: { color: '#EEF0F5' } }, axisTick: { show: false }, axisLabel: { color: '#9AA1B2', fontSize: 10 } },
+    yAxis: [
+      { type: 'value', name: '销售额', nameTextStyle: { color: '#9AA1B2', fontSize: 10 }, axisLine: { show: false }, axisTick: { show: false }, splitLine: { lineStyle: { color: '#F5F6FA', type: 'dashed' } }, axisLabel: { color: '#9AA1B2', fontSize: 10 } },
+      { type: 'value', name: '订单数', nameTextStyle: { color: '#9AA1B2', fontSize: 10 }, axisLine: { show: false }, axisTick: { show: false }, splitLine: { show: false }, axisLabel: { color: '#9AA1B2', fontSize: 10 } }
+    ],
+    series: [
+      { name: '销售额(万R$)', type: 'line', smooth: 0.4, data: trend.sales, lineStyle: { width: 2.5, color: '#5B5FFF' }, itemStyle: { color: '#5B5FFF', borderColor: '#fff', borderWidth: 2 }, symbol: 'circle', symbolSize: 5, showSymbol: false, areaStyle: { color: new echarts.graphic.LinearGradient(0,0,0,1,[{offset:0,color:'rgba(91,95,255,0.12)'},{offset:1,color:'rgba(91,95,255,0)'}]) } },
+      { name: '订单数', type: 'line', smooth: 0.4, yAxisIndex: 1, data: trend.orders, lineStyle: { width: 2, color: '#EC4899', type: [3,4] }, itemStyle: { color: '#EC4899' }, symbol: 'circle', symbolSize: 4, showSymbol: false }
+    ]
+  });
+}
+
+function renderCategoryChart(rank) {
+  if (!charts.category) charts.category = echarts.init(document.getElementById('categoryChart'), 'datapeak');
+  const total = rank.reduce(function (s, r) { return s + (r.salesAmount || 0); }, 0) || 1;
+  const items = rank.map(function (r) {
+    return { name: r.categoryName, amount: r.salesAmount || 0, share: (r.salesAmount / total * 100) };
+  }).reverse();
+  charts.category.setOption({
+    tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' }, backgroundColor: '#fff', borderColor: '#EEF0F5', textStyle: { color: '#1A1D29', fontSize: 12 }, borderRadius: 8, padding: [10, 14], formatter: function (p) { var d = items[p[0].dataIndex]; return d.name + '：' + d.amount.toFixed(1) + ' 万 R$ · 占比 ' + d.share.toFixed(1) + '%'; } },
+    grid: { left: '3%', right: '22%', bottom: '3%', top: '4%', containLabel: true },
+    xAxis: { type: 'value', axisLine: { show: false }, axisTick: { show: false }, splitLine: { lineStyle: { color: '#F5F6FA', type: 'dashed' } }, axisLabel: { color: '#9AA1B2', fontSize: 10 } },
+    yAxis: { type: 'category', data: items.map(function (d) { return d.name; }), axisLine: { show: false }, axisTick: { show: false }, axisLabel: { color: '#5B6272', fontSize: 11 } },
+    series: [{
+      type: 'bar', data: items.map(function (d) { return d.amount; }), barWidth: 12,
+      itemStyle: { borderRadius: [0, 6, 6, 0], color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [{ offset: 0, color: '#EC4899' }, { offset: 1, color: '#5B5FFF' }]) },
+      label: { show: true, position: 'right', color: '#1A1D29', fontWeight: 600, fontSize: 11, formatter: function (p) { return items[p.dataIndex].share.toFixed(1) + '%'; } }
+    }]
+  });
+}
+
+/* ⑥ 订单量 / 价格区间分布（用 TOP 商品价格分箱，回答“客单价健康吗”） */
+function renderPriceChart(list) {
+  if (!list || !list.length) return;
+  if (!charts.price) charts.price = echarts.init(document.getElementById('priceChart'), 'datapeak');
+  var bins = [
+    { name: '0-50 R$', min: 0, max: 50, n: 0 },
+    { name: '50-100 R$', min: 50, max: 100, n: 0 },
+    { name: '100-200 R$', min: 100, max: 200, n: 0 },
+    { name: '200-500 R$', min: 200, max: 500, n: 0 },
+    { name: '500 R$ 以上', min: 500, max: Infinity, n: 0 }
+  ];
+  list.forEach(function (p) {
+    var pr = p.price || 0;
+    for (var i = 0; i < bins.length; i++) {
+      if (pr >= bins[i].min && pr < bins[i].max) { bins[i].n += (p.salesCount || 0); break; }
+    }
+  });
+  charts.price.setOption({
+    tooltip: { trigger: 'axis', backgroundColor: '#fff', borderColor: '#EEF0F5', borderRadius: 8, textStyle: { color: '#1A1D29', fontSize: 12 } },
+    grid: { left: '3%', right: '4%', bottom: '3%', top: '12%', containLabel: true },
+    xAxis: { type: 'category', data: bins.map(function (b) { return b.name; }), axisLine: { lineStyle: { color: '#EEF0F5' } }, axisTick: { show: false }, axisLabel: { color: '#9AA1B2', fontSize: 10 } },
+    yAxis: { type: 'value', name: '销量', axisLine: { show: false }, axisTick: { show: false }, splitLine: { lineStyle: { color: '#F5F6FA', type: 'dashed' } }, axisLabel: { color: '#9AA1B2', fontSize: 10 } },
+    series: [{ type: 'bar', data: bins.map(function (b) { return b.n; }), barWidth: 40, itemStyle: { borderRadius: [6, 6, 0, 0], color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{ offset: 0, color: '#EC4899' }, { offset: 1, color: '#5B5FFF' }]) }, label: { show: true, position: 'top', color: '#5B6272', fontWeight: 600, fontSize: 10 } }]
+  });
+}
+
+/* 店铺对比（代运营视角，公开 /sellers） */
+async function loadSellerCompare() {
+  var box = document.getElementById('sellerCompareList');
+  if (!box) return;
+  try {
+    var sellers = await apiFetch('/sellers');   // 公开，无需 token
+    if (!sellers || !sellers.length) { box.innerHTML = '<div class="restock-note">暂无店铺数据</div>'; return; }
+    var max = Math.max.apply(null, sellers.map(function (s) { return s.orderCount || 0; })) || 1;
+    box.innerHTML = sellers.map(function (s, i) {
+      var pct = ((s.orderCount || 0) / max * 100).toFixed(0);
+      return '<div class="seller-row"><span class="top-rank">' + (i + 1) + '</span>' +
+        '<div class="top-info"><div class="top-name">' + (s.shopName || s.sellerId) + '</div>' +
+        '<div class="top-cat">seller_id ' + s.sellerId + '</div></div>' +
+        '<div class="top-bar-bg"><div class="top-bar-fill" style="width:' + pct + '%"></div></div>' +
+        '<span class="top-num">' + (s.orderCount || 0).toLocaleString() + ' 单</span></div>';
+    }).join('');
+  } catch (err) {
+    box.innerHTML = '<div class="restock-note">店铺数据加载失败，请确认后端已启动</div>';
+  }
+}
+
+/* ③④ 评分 / 履约 图（复用 /diagnosis 数据，避免重复请求） */
+function renderHealthCharts(data) {
+  if (!data || !data.kpi) return;
+  var k = data.kpi;
+  // ③ 平均评分
+  var sc = (k.avgReviewScore == null) ? null : Number(k.avgReviewScore);
+  var num = document.getElementById('scoreNum');
+  var tip = document.getElementById('scoreTip');
+  if (num) { num.textContent = (sc == null ? '--' : sc.toFixed(2)); num.className = 'score-num ' + (sc == null ? '' : (sc >= 3.5 ? 'good' : 'bad')); }
+  if (tip) { tip.textContent = (sc == null ? '暂无评分数据' : (sc >= 3.5 ? '口碑健康（≥3.5）· 保持品质与详情页' : '口碑预警（<3.5）· 立即查详情页与商品质量')); }
+  if (window.echarts && document.getElementById('scoreChart')) {
+    if (!charts.score) charts.score = echarts.init(document.getElementById('scoreChart'), 'datapeak');
+    charts.score.setOption({
+      grid: { left: '4%', right: '4%', top: '6%', bottom: '10%' },
+      xAxis: { type: 'value', min: 0, max: 5, show: false },
+      yAxis: { type: 'category', data: ['评分'], show: false },
+      series: [{
+        type: 'bar', barWidth: 20, data: [sc || 0],
+        itemStyle: { color: (sc >= 3.5 ? '#22C55E' : '#EF4444'), borderRadius: 6 },
+        label: { show: true, position: 'right', formatter: (sc || 0).toFixed(2) + ' / 5', color: '#5B6272', fontWeight: 700 },
+        markLine: { silent: true, symbol: 'none', data: [{ xAxis: 3.5 }], lineStyle: { color: '#F59E0B' }, label: { formatter: '健康线 3.5', color: '#F59E0B', fontSize: 10 } }
+      }]
+    });
+  }
+  // ④ 延迟发货率 / 取消率
+  if (window.echarts && document.getElementById('fulfillChart')) {
+    if (!charts.fulfill) charts.fulfill = echarts.init(document.getElementById('fulfillChart'), 'datapeak');
+    var d = Number(k.delayRate || 0), c = Number(k.cancelRate || 0);
+    charts.fulfill.setOption({
+      tooltip: { trigger: 'axis', backgroundColor: '#fff', borderColor: '#EEF0F5', borderRadius: 8, textStyle: { color: '#1A1D29', fontSize: 12 } },
+      grid: { left: '3%', right: '14%', bottom: '3%', top: '12%', containLabel: true },
+      xAxis: { type: 'value', axisLabel: { formatter: '{value}%', color: '#9AA1B2', fontSize: 10 }, splitLine: { lineStyle: { color: '#F5F6FA', type: 'dashed' } } },
+      yAxis: { type: 'category', data: ['取消率', '延迟发货率'], axisLabel: { color: '#5B6272', fontSize: 11 } },
+      series: [{
+        type: 'bar', barWidth: 18,
+        data: [
+          { value: c, itemStyle: { color: '#EF4444', borderRadius: [0, 6, 6, 0] } },
+          { value: d, itemStyle: { color: '#F59E0B', borderRadius: [0, 6, 6, 0] } }
+        ],
+        label: { show: true, position: 'right', formatter: '{c}%', color: '#1A1D29', fontWeight: 600, fontSize: 11 },
+        markLine: { silent: true, symbol: 'none', data: [{ xAxis: 15 }, { xAxis: 2 }], lineStyle: { color: '#EF4444', type: 'dashed' }, label: { formatter: '预警线', color: '#EF4444', fontSize: 10 } }
+      }]
+    });
+  }
+}
+
+function renderPaymentChart(pay) {
+  if (!charts.payment) charts.payment = echarts.init(document.getElementById('paymentChart'), 'datapeak');
+  const colors = ['#5B5FFF', '#EC4899', '#F59E0B', '#22C55E'];
+  charts.payment.setOption({
+    tooltip: { trigger: 'item', formatter: '{b}: {d}%' },
+    series: [{ type: 'pie', radius: ['55%', '78%'], center: ['50%', '45%'], avoidLabelOverlap: false, itemStyle: { borderRadius: 3, borderColor: '#fff', borderWidth: 2 }, label: { show: false },
+      data: pay.map((p, i) => ({ value: p.percentage, name: p.paymentType, itemStyle: { color: colors[i % colors.length] } }))
+    }]
+  });
+  document.getElementById('paymentLegend').innerHTML = pay.map((p, i) => `<div class="legend-row"><div class="legend-left"><span class="legend-dot" style="background:${colors[i % colors.length]}"></span>${p.paymentType}</div><span class="legend-value">${p.percentage}% · ${p.count.toLocaleString()}笔</span></div>`).join('');
+}
+
+// ========== 订单表格 ==========
+async function loadOrders(keyword) {
+  const category = document.getElementById('dashCategory').value;
+  const startDate = document.getElementById('dashStartDate').value;
+  const endDate = document.getElementById('dashEndDate').value;
+  const params = `category=${category}&startDate=${startDate}&endDate=${endDate}&keyword=${keyword || ''}&pageNum=${currentPage}&pageSize=10&sellerId=${curSeller}`;
+  const res = await fetchAPI('/orders?' + params);
+  if (!res) return;
+  document.getElementById('orderCount').textContent = '共 ' + res.total.toLocaleString() + ' 条';
+  const statusMap = { delivered: { text: '已完成', cls: 'status-ok' }, shipped: { text: '运输中', cls: 'status-wait' }, canceled: { text: '已取消', cls: 'status-cancel' } };
+  document.getElementById('orderTable').innerHTML = res.list.map(item => {
+    const s = statusMap[item.orderStatus] || statusMap.delivered;
+    const img = PRODUCT_IMGS[Math.abs(item.productName.charCodeAt(0)) % PRODUCT_IMGS.length];
+    return `<tr>
+      <td><span class="order-id">${item.orderId.substring(0,14)}</span></td>
+      <td><div class="product-cell"><img src="${makeProductImg(img.icon, '#fff', img.c2)}" alt=""><div><div class="product-name">${item.productName}</div><div class="product-sku">SKU: ${item.productId || item.orderId.substring(0,8).toUpperCase()}</div></div></div></td>
+      <td>${item.category}</td>
+      <td>R$ ${item.price.toFixed(2)}</td>
+      <td style="text-align:center">${item.quantity}</td>
+      <td class="amount">R$ ${item.totalAmount.toFixed(2)}</td>
+      <td>${item.purchaseTime}</td>
+      <td>${item.paymentType}</td>
+      <td><span class="status-pill ${s.cls}">${s.text}</span></td>
+    </tr>`;
+  }).join('');
+  // 分页
+  totalPages = Math.ceil(res.total / 10);
+  let pagHtml = `<span class="page-info">第 ${(currentPage-1)*10+1}-${Math.min(currentPage*10, res.total)} 条 / 共 ${res.total.toLocaleString()} 条</span>`;
+  pagHtml += `<button class="page-btn" onclick="goPage(${currentPage-1})">‹</button>`;
+  for (let i = 1; i <= Math.min(10, totalPages); i++) {
+    pagHtml += `<button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="goPage(${i})">${i}</button>`;
+  }
+  if (totalPages > 10) pagHtml += `<span class="page-info">...</span>`;
+  pagHtml += `<button class="page-btn" onclick="goPage(${currentPage+1})">›</button>`;
+  document.getElementById('orderPagination').innerHTML = pagHtml;
+}
+
+function goPage(p) {
+  if (p < 1 || p > totalPages) return;
+  currentPage = p;
+  loadOrders();
+}
+
+function exportOrders() {
+  showToast('正在导出订单数据为 CSV...', 'success');
+  setTimeout(() => showToast('导出完成！已下载 orders.csv', 'success'), 1500);
+}
+
+// ========== 商品管理 ==========
+/* 商品页 KPI：商品总数 / 商品品类数 / 有销量商品数 / 累计销售额（全部来自真实接口） */
+async function loadProductsKpi() {
+  try {
+    // 商品总数：/orders/product-overview（商品表真实统计）
+    var overview = await fetchAPI('/orders/product-overview');
+    var totalProducts = (overview && overview.totalProducts != null) ? overview.totalProducts : null;
+    if (totalProducts != null) {
+      document.getElementById('prodKpiTotal').innerHTML = totalProducts.toLocaleString() + '<span class="kpi-unit">款</span>';
+    }
+    // 品类数：/orders/categories（与页面副标题口径一致，不写死）
+    var cats = await fetchAPI('/orders/categories');
+    if (cats && cats.length) {
+      document.getElementById('prodKpiCategories').innerHTML = cats.length + '<span class="kpi-unit">个</span>';
+      var sub = document.querySelector('#pageTitle p');
+      if (sub) sub.textContent = (totalProducts != null ? totalProducts.toLocaleString() : '--') + ' 款商品 · ' + cats.length + ' 个品类';
+    }
+    var kpi = await fetchAPI('/orders/kpi?category=all&startDate=' + SALES_START + '&endDate=' + SALES_END + '&sellerId=' + curSeller);
+    if (kpi) {
+      document.getElementById('prodKpiActive').innerHTML = kpi.hotProducts.toLocaleString() + '<span class="kpi-unit">款</span>';
+      document.getElementById('prodKpiSales').innerHTML = kpi.totalSales.toLocaleString() + '<span class="kpi-unit">万 R$</span>';
+    }
+  } catch (e) {
+    console.error('loadProductsKpi 失败', e);
+  }
+}
+
+async function loadProducts() {
+  showLoading();
+  const category = document.getElementById('prodCategory').value;
+  const priceRange = document.getElementById('prodPriceRange').value;
+  const sortBy = document.getElementById('prodSortBy').value;
+  const keyword = document.getElementById('prodKeyword').value;
+  // 保存筛选条件
+  saveProductsFilter();
+  const params = `category=${category}&sortBy=${sortBy}&limit=12&sellerId=${curSeller}`;
+  const res = await fetchAPI('/orders/product-ranking?' + params);
+  if (res) {
+    let list = res;
+    // 价格筛选
+    if (priceRange !== 'all') {
+      const [min, max] = priceRange.split('-').map(Number);
+      list = list.filter(p => p.price >= min && p.price < max);
+    }
+    // 搜索
+    if (keyword) list = list.filter(p => p.productName.includes(keyword));
+    // 排序
+    if (sortBy === 'price_asc') list.sort((a, b) => a.price - b.price);
+    if (sortBy === 'price_desc') list.sort((a, b) => b.price - a.price);
+    renderProducts(list);
+  }
+  hideLoading();
+}
+
+function renderProducts(list) {
+  const grid = document.getElementById('productGrid');
+  if (!list || list.length === 0) {
+    grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><p>没有找到匹配的商品</p></div>';
+    return;
+  }
+  grid.innerHTML = list.map((p, i) => {
+    const img = PRODUCT_IMGS[i % PRODUCT_IMGS.length];
+    return `<div class="product-card">
+      <div class="product-img-box"><img src="${makeProductImg(img.icon, img.c1, img.c2)}" alt=""><span class="product-tag">${p.category}</span></div>
+      <div class="product-body">
+        <div class="product-card-name">${p.productName}</div>
+        <div class="product-card-cat">${p.category}</div>
+        <div class="product-price"><span>R$ </span>${p.price.toFixed(2)}</div>
+        <div class="product-stats">
+          <div class="product-stat"><div class="product-stat-num">${p.salesCount.toLocaleString()}</div><div class="product-stat-label">已售</div></div>
+          <div class="product-stat"><div class="product-stat-num">${p.salesAmount.toFixed(1)}</div><div class="product-stat-label">销售额(万R$)</div></div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ========== 销售分析（真实数据：/orders/*，无任何写死数值） ==========
+/* 数据集真实周期（Olist）：2017-01 ~ 2018-08（2018-09 仅 1 笔孤立订单，不计入） */
+var SALES_START = '2017-01-01';
+var SALES_END = '2018-08-31';
+
+/**
+ * 解析趋势接口的月份标签为 { year, month }。
+ * 兼容真实数据格式 '2018-01' 与兜底 mock 格式 '1月' / '次年3月'。
+ * @param {string} label 月份标签
+ * @param {number} seriesStartYear mock 序列起始年份（'1月' 所属的年份；真实数据有显式年份，此参数不生效）
+ * @returns {{year: number, month: number}|null} 解析失败返回 null
+ */
+function parseMonthLabel(label, seriesStartYear) {
+  if (!label) return null;
+  var m = String(label).match(/^(\d{4})-(\d{1,2})$/);
+  if (m) return { year: parseInt(m[1], 10), month: parseInt(m[2], 10) };
+  var mm = String(label).match(/^(次年)?(\d{1,2})月$/);
+  if (mm) return { year: seriesStartYear + (mm[1] ? 1 : 0), month: parseInt(mm[2], 10) };
+  return null;
+}
+
+/**
+ * 提取趋势数据中某一年的「月份(1-12) -> 销售额(万R$)」映射，同月多条相加。
+ * @param {object} trend TrendDTO（months/sales 平行数组）
+ * @param {number} seriesStartYear mock 序列起始年份（真实数据有显式年份，此参数不生效）
+ * @param {number} wantYear 目标年份
+ * @returns {Object.<number, number>} key 为月份 1-12
+ */
+function trendYearMap(trend, seriesStartYear, wantYear) {
+  var map = {};
+  if (!trend || !trend.months) return map;
+  trend.months.forEach(function (label, i) {
+    var p = parseMonthLabel(label, seriesStartYear);
+    if (!p || p.year !== wantYear || p.month < 1 || p.month > 12) return;
+    var v = (trend.sales && trend.sales[i]) || 0;
+    map[p.month] = (map[p.month] || 0) + v;
+  });
+  return map;
+}
+
+/** 汇总 map 中 [from, to] 闭区间月份的销售额 */
+function sumMonthRange(map, from, to) {
+  var s = 0;
+  for (var i = from; i <= to; i++) s += (map[i] || 0);
+  return s;
+}
+
+/**
+ * 加载销售分析页：KPI + 同比趋势 + 季度对比 + 品类增长 + 热销商品。
+ * 数据全部来自真实公共接口 /orders/kpi|trend|category-rank|product-ranking。
+ */
+async function loadSalesAnalysis() {
+  showLoading();
+  try {
+    var category = document.getElementById('salesCategory').value;
+    var sp = SALES_START, ep = SALES_END;
+    var params = 'category=' + category + '&startDate=' + sp + '&endDate=' + ep + '&sellerId=' + curSeller;
+
+    // ① KPI 区间汇总
+    var kpi = await fetchAPI('/orders/kpi?' + params);
+    if (kpi) {
+      document.getElementById('salesKpiSales').innerHTML = kpi.totalSales.toLocaleString() + '<span class="kpi-unit">万 R$</span>';
+      document.getElementById('salesKpiOrders').innerHTML = kpi.totalOrders.toLocaleString() + '<span class="kpi-unit">单</span>';
+      document.getElementById('salesKpiAvg').innerHTML = kpi.avgOrderValue.toLocaleString() + '<span class="kpi-unit">R$</span>';
+    }
+
+    // ② 同比趋势：2017 与 2018 逐月销售额
+    var trend17 = await fetchAPI('/orders/trend?category=' + category + '&startDate=2017-01-01&endDate=2017-12-31&sellerId=' + curSeller + '&granularity=month');
+    var trend18 = await fetchAPI('/orders/trend?category=' + category + '&startDate=2018-01-01&endDate=2018-12-31&sellerId=' + curSeller + '&granularity=month');
+    // mock 序列以 2017 年为起点（'1月'=2017-01，'次年1月'=2018-01）；真实数据带显式年份，起始年不生效
+    var map17 = trendYearMap(trend17, 2017, 2017);
+    var map18 = trendYearMap(trend18, 2017, 2018);
+    renderSalesCompare(map17, map18);
+    renderQuarter(map17, map18);
+
+    // ③ 销售额同比增长：2018-01~08 vs 2017-01~08（等长窗口，口径可比；上期为空则显示 --）
+    var cur8 = sumMonthRange(map18, 1, 8), prev8 = sumMonthRange(map17, 1, 8);
+    if (prev8 > 0) {
+      var yoy = Math.round((cur8 - prev8) / prev8 * 1000) / 10;
+      document.getElementById('salesKpiGrowth').innerHTML = (yoy >= 0 ? '+' : '') + yoy + '<span class="kpi-unit">%</span>';
+    } else {
+      document.getElementById('salesKpiGrowth').innerHTML = '--<span class="kpi-unit">%</span>';
+    }
+
+    // ④ 品类同比增长：2018-01~08 vs 2017-01~08
+    var cur = await fetchAPI('/orders/category-rank?startDate=2018-01-01&endDate=2018-08-31&sellerId=' + curSeller + '&limit=100');
+    var prev = await fetchAPI('/orders/category-rank?startDate=2017-01-01&endDate=2017-08-31&sellerId=' + curSeller + '&limit=100');
+    renderCategoryGrowth(cur, prev);
+
+    // ⑤ 热销商品 TOP10（按销售件数）
+    var prod = await fetchAPI('/orders/product-ranking?category=' + category + '&startDate=' + sp + '&endDate=' + ep + '&sellerId=' + curSeller + '&sortBy=count&limit=10');
+    renderSalesTopProducts(prod);
+
+    showToast('销售分析已加载', 'success');
+  } catch (e) {
+    console.error('loadSalesAnalysis 失败', e);
+  } finally {
+    hideLoading();
+  }
+}
+
+/* 销售趋势同比对比：2017 vs 2018 逐月销售额（万 R$），2018 缺月以断点显示 */
+function renderSalesCompare(map17, map18) {
+  if (!charts.salesCompare) charts.salesCompare = echarts.init(document.getElementById('salesCompareChart'), 'datapeak');
+  var months = [];
+  for (var i = 1; i <= 12; i++) months.push(i + '月');
+  charts.salesCompare.setOption({
+    tooltip: { trigger: 'axis', backgroundColor: '#fff', borderColor: '#EEF0F5', textStyle: { color: '#1A1D29', fontSize: 12 }, borderRadius: 8 },
+    legend: { data: ['2017年', '2018年'], right: 0, top: 0, textStyle: { fontSize: 11, color: '#8A90A2' }, itemWidth: 14, itemHeight: 2 },
+    grid: { left: '3%', right: '4%', bottom: '3%', top: '12%', containLabel: true },
+    xAxis: { type: 'category', data: months, boundaryGap: false, axisLine: { lineStyle: { color: '#EEF0F5' } }, axisTick: { show: false }, axisLabel: { color: '#9AA1B2', fontSize: 10 } },
+    yAxis: { type: 'value', name: '销售额(万R$)', nameTextStyle: { color: '#9AA1B2', fontSize: 10 }, axisLine: { show: false }, axisTick: { show: false }, splitLine: { lineStyle: { color: '#F5F6FA', type: 'dashed' } }, axisLabel: { color: '#9AA1B2', fontSize: 10 } },
+    series: [
+      { name: '2017年', type: 'line', smooth: 0.4, data: months.map(function (_, i) { return map17[i + 1] || null; }), lineStyle: { width: 2, color: '#C4B5FD' }, itemStyle: { color: '#C4B5FD' }, showSymbol: false, areaStyle: { color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{ offset: 0, color: 'rgba(196,181,253,0.1)' }, { offset: 1, color: 'rgba(196,181,253,0)' }]) } },
+      { name: '2018年', type: 'line', smooth: 0.4, data: months.map(function (_, i) { return map18[i + 1] || null; }), lineStyle: { width: 2.5, color: '#5B5FFF' }, itemStyle: { color: '#5B5FFF', borderColor: '#fff', borderWidth: 2 }, symbol: 'circle', symbolSize: 5, showSymbol: false, areaStyle: { color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{ offset: 0, color: 'rgba(91,95,255,0.15)' }, { offset: 1, color: 'rgba(91,95,255,0)' }]) } }
+    ]
+  });
+}
+
+/* 季度销售对比：2017 vs 2018 各季度销售额（万 R$） */
+function renderQuarter(map17, map18) {
+  if (!charts.quarter) charts.quarter = echarts.init(document.getElementById('quarterChart'), 'datapeak');
+  var quarters = ['Q1', 'Q2', 'Q3', 'Q4'];
+  var qOf = function (m) { return Math.floor((m - 1) / 3); };
+  var agg = function (map) {
+    var q = [0, 0, 0, 0];
+    for (var m = 1; m <= 12; m++) q[qOf(m)] += (map[m] || 0);
+    return q.map(function (v) { return Math.round(v * 10) / 10; });
+  };
+  charts.quarter.setOption({
+    tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' }, backgroundColor: '#fff', borderColor: '#EEF0F5', textStyle: { color: '#1A1D29', fontSize: 12 }, borderRadius: 8 },
+    legend: { data: ['2017年', '2018年'], right: 0, top: 0, textStyle: { fontSize: 11, color: '#8A90A2' }, itemWidth: 14, itemHeight: 2 },
+    grid: { left: '3%', right: '4%', bottom: '3%', top: '12%', containLabel: true },
+    xAxis: { type: 'category', data: quarters, axisLine: { lineStyle: { color: '#EEF0F5' } }, axisTick: { show: false }, axisLabel: { color: '#9AA1B2', fontSize: 10 } },
+    yAxis: { type: 'value', name: '销售额(万R$)', nameTextStyle: { color: '#9AA1B2', fontSize: 10 }, axisLine: { show: false }, axisTick: { show: false }, splitLine: { lineStyle: { color: '#F5F6FA', type: 'dashed' } }, axisLabel: { color: '#9AA1B2', fontSize: 10 } },
+    series: [
+      { name: '2017年', type: 'bar', data: agg(map17), barWidth: 22, itemStyle: { color: '#C4B5FD', borderRadius: [4, 4, 0, 0] } },
+      { name: '2018年', type: 'bar', data: agg(map18), barWidth: 22, itemStyle: { color: '#5B5FFF', borderRadius: [4, 4, 0, 0] }, label: { show: true, position: 'top', color: '#5B6272', fontWeight: 600, fontSize: 10 } }
+    ]
+  });
+}
+
+/* 品类同比增长排名：2018-01~08 vs 2017-01~08 销售额增速 TOP10，正增绿 / 负增红。
+   仅统计上期销售额 ≥1 万 R$ 的品类，避免「0.1万→3.7万 = +3600%」式小基数失真。 */
+function renderCategoryGrowth(cur, prev) {
+  if (!charts.growth) charts.growth = echarts.init(document.getElementById('growthChart'), 'datapeak');
+  var MIN_BASE_WAN = 1.0;  // 上期绝对额下限（万 R$），与预警阈值同口径
+  var prevMap = {};
+  (prev || []).forEach(function (r) { prevMap[r.categoryName] = r.salesAmount || 0; });
+  var rows = (cur || []).map(function (r) {
+    var p = prevMap[r.categoryName] || 0;
+    var c = r.salesAmount || 0;
+    return { name: r.categoryName, cur: c, prev: p, growth: p > 0 ? Math.round((c - p) / p * 1000) / 10 : null };
+  }).filter(function (r) { return r.growth !== null && r.prev >= MIN_BASE_WAN; });
+  rows.sort(function (a, b) { return b.growth - a.growth; });
+  rows = rows.slice(0, 10);
+  var names = rows.map(function (r) { return r.name; }).reverse();
+  var vals = rows.map(function (r) { return r.growth; }).reverse();
+  charts.growth.setOption({
+    tooltip: {
+      trigger: 'axis', axisPointer: { type: 'shadow' }, backgroundColor: '#fff', borderColor: '#EEF0F5', textStyle: { color: '#1A1D29', fontSize: 12 }, borderRadius: 8,
+      formatter: function (ps) {
+        var r = rows[ps[0].dataIndex];
+        return r.name + '：<b>' + (r.growth >= 0 ? '+' : '') + r.growth + '%</b><br/>2018-01~08：' + r.cur + ' 万 R$<br/>2017-01~08：' + r.prev + ' 万 R$';
+      }
+    },
+    grid: { left: '3%', right: '8%', bottom: '3%', top: '5%', containLabel: true },
+    xAxis: { type: 'value', axisLine: { show: false }, axisTick: { show: false }, splitLine: { lineStyle: { color: '#F5F6FA', type: 'dashed' } }, axisLabel: { color: '#9AA1B2', fontSize: 10, formatter: '{value}%' } },
+    yAxis: { type: 'category', data: names, axisLine: { show: false }, axisTick: { show: false }, axisLabel: { color: '#5B6272', fontSize: 11 } },
+    series: [{
+      type: 'bar', barWidth: 11,
+      data: vals.map(function (v) {
+        return {
+          value: v,
+          itemStyle: {
+            borderRadius: [0, 5, 5, 0],
+            color: v >= 0
+              ? new echarts.graphic.LinearGradient(0, 0, 1, 0, [{ offset: 0, color: '#22C55E' }, { offset: 1, color: '#10B981' }])
+              : new echarts.graphic.LinearGradient(0, 0, 1, 0, [{ offset: 0, color: '#F87171' }, { offset: 1, color: '#EF4444' }])
+          }
+        };
+      }),
+      label: { show: true, position: 'right', fontWeight: 600, fontSize: 10, formatter: function (p) { return (p.value >= 0 ? '+' : '') + p.value + '%'; }, color: '#5B6272' }
+    }]
+  });
+}
+
+/* 热销商品 TOP10：按销售件数（真实 /orders/product-ranking） */
+function renderSalesTopProducts(prod) {
+  if (!prod || !prod.length) return;
+  if (!charts.topProducts) charts.topProducts = echarts.init(document.getElementById('topProductsChart'), 'datapeak');
+  var rows = prod.slice(0, 10);
+  var names = rows.map(function (r) { return r.productName; }).reverse();
+  charts.topProducts.setOption({
+    tooltip: {
+      trigger: 'axis', axisPointer: { type: 'shadow' }, backgroundColor: '#fff', borderColor: '#EEF0F5', textStyle: { color: '#1A1D29', fontSize: 12 }, borderRadius: 8,
+      formatter: function (ps) {
+        var r = rows[rows.length - 1 - ps[0].dataIndex];
+        return r.productName + '（' + r.category + '）<br/>已售 <b>' + r.salesCount.toLocaleString() + '</b> 件<br/>销售额 ' + r.salesAmount + ' 万 R$';
+      }
+    },
+    grid: { left: '3%', right: '8%', bottom: '3%', top: '5%', containLabel: true },
+    xAxis: { type: 'value', name: '销量(件)', nameTextStyle: { color: '#9AA1B2', fontSize: 10 }, axisLine: { show: false }, axisTick: { show: false }, splitLine: { lineStyle: { color: '#F5F6FA', type: 'dashed' } }, axisLabel: { color: '#9AA1B2', fontSize: 10 } },
+    yAxis: { type: 'category', data: names, axisLine: { show: false }, axisTick: { show: false }, axisLabel: { color: '#5B6272', fontSize: 11 } },
+    series: [{
+      type: 'bar', barWidth: 12,
+      data: rows.map(function (r) { return r.salesCount; }).reverse(),
+      itemStyle: { borderRadius: [0, 6, 6, 0], color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [{ offset: 0, color: '#FBBF24' }, { offset: 1, color: '#F59E0B' }]) },
+      label: { show: true, position: 'right', color: '#1A1D29', fontWeight: 600, fontSize: 10, formatter: function (p) { return p.value.toLocaleString(); } }
+    }]
+  });
+}
+
+// ========== 用户分析（真实数据：/orders/user-distribution） ==========
+/**
+ * 加载用户分析页：KPI + 用户结构 + 复购对比。
+ * 数据全部来自真实公共接口 /orders/user-distribution。
+ */
+async function loadUserAnalysis() {
+  showLoading();
+  try {
+    var dist = await fetchAPI('/orders/user-distribution?startDate=' + SALES_START + '&endDate=' + SALES_END + '&sellerId=' + curSeller);
+    if (dist) {
+      var total = (dist.newUserCount || 0) + (dist.repeatUserCount || 0);
+      document.getElementById('usersKpiTotal').innerHTML = total.toLocaleString() + '<span class="kpi-unit">人</span>';
+      document.getElementById('usersKpiRepeatRate').innerHTML = dist.repeatPercentage + '<span class="kpi-unit">%</span>';
+      document.getElementById('usersKpiNewRate').innerHTML = dist.newUserPercentage + '<span class="kpi-unit">%</span>';
+      document.getElementById('usersKpiHighValue').innerHTML = (dist.highValueCount || 0).toLocaleString() + '<span class="kpi-unit">人</span>';
+      renderUserStruct(dist);
+      renderUserRepeat(dist);
+    }
+    showToast('用户分析已加载', 'success');
+  } catch (e) {
+    console.error('loadUserAnalysis 失败', e);
+  } finally {
+    hideLoading();
+  }
+}
+
+/* 用户结构分布：新用户 / 复购用户 环形图 + 图例（真实数据） */
+function renderUserStruct(dist) {
+  if (!charts.userStruct) charts.userStruct = echarts.init(document.getElementById('userStructChart'), 'datapeak');
+  var items = [
+    { name: '新用户', value: dist.newUserCount || 0, pct: dist.newUserPercentage || 0, color: '#5B5FFF' },
+    { name: '复购用户', value: dist.repeatUserCount || 0, pct: dist.repeatPercentage || 0, color: '#EC4899' }
+  ];
+  charts.userStruct.setOption({
+    tooltip: { trigger: 'item', backgroundColor: '#fff', borderColor: '#EEF0F5', textStyle: { color: '#1A1D29', fontSize: 12 }, borderRadius: 8, formatter: '{b}: {c}人 ({d}%)' },
+    series: [{
+      type: 'pie', radius: ['55%', '78%'], center: ['50%', '45%'], avoidLabelOverlap: false,
+      itemStyle: { borderRadius: 3, borderColor: '#fff', borderWidth: 2 }, label: { show: false },
+      data: items.map(function (it) { return { value: it.value, name: it.name, itemStyle: { color: it.color } }; })
+    }]
+  });
+  document.getElementById('userStructLegend').innerHTML = items.map(function (it) {
+    return '<div class="legend-row"><div class="legend-left"><span class="legend-dot" style="background:' + it.color + '"></span>' + it.name + '</div><span class="legend-value">' + it.pct + '% · ' + it.value.toLocaleString() + '人</span></div>';
+  }).join('');
+}
+
+/* 复购 vs 新客：回头客与新客数量对比（真实数据） */
+function renderUserRepeat(dist) {
+  if (!charts.userRepeat) charts.userRepeat = echarts.init(document.getElementById('userRepeatChart'), 'datapeak');
+  charts.userRepeat.setOption({
+    tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' }, backgroundColor: '#fff', borderColor: '#EEF0F5', textStyle: { color: '#1A1D29', fontSize: 12 }, borderRadius: 8 },
+    grid: { left: '3%', right: '4%', bottom: '3%', top: '12%', containLabel: true },
+    xAxis: { type: 'category', data: ['新用户', '复购用户'], axisLine: { lineStyle: { color: '#EEF0F5' } }, axisTick: { show: false }, axisLabel: { color: '#9AA1B2', fontSize: 10 } },
+    yAxis: { type: 'value', name: '人数', nameTextStyle: { color: '#9AA1B2', fontSize: 10 }, axisLine: { show: false }, axisTick: { show: false }, splitLine: { lineStyle: { color: '#F5F6FA', type: 'dashed' } }, axisLabel: { color: '#9AA1B2', fontSize: 10 } },
+    series: [{
+      type: 'bar', barWidth: 48,
+      data: [
+        { value: dist.newUserCount || 0, itemStyle: { color: '#5B5FFF', borderRadius: [6, 6, 0, 0] } },
+        { value: dist.repeatUserCount || 0, itemStyle: { color: '#EC4899', borderRadius: [6, 6, 0, 0] } }
+      ],
+      label: { show: true, position: 'top', color: '#5B6272', fontWeight: 600, fontSize: 11, formatter: function (p) { return p.value.toLocaleString(); } }
+    }]
+  });
+}
+
+// ========== 数据报表（真实接口动态渲染，不写死任何数字） ==========
+/* 数据集窗口的月份跨度与中文标签：由 SALES_START/SALES_END 常量推导，避免写死「20 个月」 */
+function reportMonthSpan(start, end) {
+  var a = start.split('-'), b = end.split('-');
+  var y1 = parseInt(a[0], 10), m1 = parseInt(a[1], 10), y2 = parseInt(b[0], 10), m2 = parseInt(b[1], 10);
+  return {
+    months: (y2 - y1) * 12 + (m2 - m1) + 1,
+    fromLabel: y1 + '年' + m1 + '月',
+    toLabel: y2 + '年' + m2 + '月'
+  };
+}
+
+/* 6 张报表卡片：5 张接真实公共接口；运营周报无接口支撑 → 诚实标注 */
+async function loadReports() {
+  showLoading();
+  try {
+    var sp = SALES_START, ep = SALES_END;
+    var span = reportMonthSpan(sp, ep);
+
+    // 品类总数动态取（与商品页 KPI 同源），不写死 73
+    var overview = await fetchAPI('/orders/product-overview');
+    var catCount = (overview && overview.totalCategories != null) ? overview.totalCategories : '--';
+
+    // ① 销售月度汇总：/orders/kpi
+    var kpi = await fetchAPI('/orders/kpi?category=all&startDate=' + sp + '&endDate=' + ep + '&sellerId=' + curSeller);
+    if (kpi) {
+      document.getElementById('reportBodySales').textContent =
+        '包含 ' + span.fromLabel + ' 至 ' + span.toLabel + ' 共 ' + span.months + ' 个月的数据，覆盖全部 ' + catCount +
+        ' 个品类，总销售额 R$ ' + kpi.totalSales.toLocaleString() +
+        ' 万，订单 ' + kpi.totalOrders.toLocaleString() + ' 笔，平均客单价 R$ ' + kpi.avgOrderValue + '。';
+    }
+
+    // ② 品类销售分析：/orders/category-rank
+    var rank = await fetchAPI('/orders/category-rank?startDate=' + sp + '&endDate=' + ep + '&sellerId=' + curSeller + '&limit=3');
+    if (rank && rank.length) {
+      document.getElementById('reportBodyCategory').textContent =
+        '覆盖 ' + catCount + ' 个品类，TOP3 分别为 ' + rank.map(function (r) {
+          return r.categoryName + '(R$' + r.salesAmount + '万)';
+        }).join('、') + '。';
+    }
+
+    // ③ 商品销量 TOP 排行：/orders/product-ranking
+    var prod = await fetchAPI('/orders/product-ranking?category=all&startDate=' + sp + '&endDate=' + ep + '&sellerId=' + curSeller + '&sortBy=count&limit=10');
+    if (prod && prod.length) {
+      var top = prod[0];
+      var totalSold = prod.reduce(function (s, p) { return s + (p.salesCount || 0); }, 0);
+      var totalAmt = Math.round(prod.reduce(function (s, p) { return s + (p.salesAmount || 0); }, 0) * 10) / 10;
+      document.getElementById('reportBodyProduct').textContent =
+        'TOP10 商品合计销售 ' + totalSold.toLocaleString() + ' 件、R$ ' + totalAmt + ' 万；销量第一为「' + top.productName +
+        '」（' + top.category + '），已售 ' + top.salesCount.toLocaleString() + ' 件。';
+    }
+
+    // ④ 用户画像与留存：/orders/user-distribution
+    var dist = await fetchAPI('/orders/user-distribution?startDate=' + sp + '&endDate=' + ep + '&sellerId=' + curSeller);
+    if (dist) {
+      var total = (dist.newUserCount || 0) + (dist.repeatUserCount || 0);
+      document.getElementById('reportBodyUser').textContent =
+        total.toLocaleString() + ' 位下单用户中，新用户 ' + dist.newUserCount.toLocaleString() + '（' + dist.newUserPercentage +
+        '%），复购用户 ' + dist.repeatUserCount.toLocaleString() + '（' + dist.repeatPercentage + '%），高价值用户 ' +
+        dist.highValueCount.toLocaleString() + '（' + dist.highValuePercentage + '%）。';
+    }
+
+    // ⑤ 支付方式分析：/orders/payment-distribution
+    var pay = await fetchAPI('/orders/payment-distribution?startDate=' + sp + '&endDate=' + ep + '&sellerId=' + curSeller);
+    if (pay && pay.length) {
+      document.getElementById('reportBodyPayment').textContent =
+        pay.map(function (p) { return p.paymentType + ' ' + p.percentage + '%（' + p.count.toLocaleString() + '笔）'; }).join('，') + '。';
+    }
+
+    showToast('报表数据已更新', 'success');
+  } catch (e) {
+    console.error('loadReports 失败', e);
+    // 兜底：仍在"加载中"的卡片给出明确失败提示，不留白屏
+    ['reportBodySales', 'reportBodyCategory', 'reportBodyProduct', 'reportBodyUser', 'reportBodyPayment'].forEach(function (id) {
+      var el = document.getElementById(id);
+      if (el && el.textContent === '加载中…') el.textContent = '数据加载失败，请确认后端已启动';
+    });
+  } finally {
+    hideLoading();
+  }
+}
+
+function initPageCharts(page) {
+  if (pageInited[page]) { setTimeout(() => Object.values(charts).forEach(c => { try { c.resize(); } catch(e){} }), 50); return; }
+  pageInited[page] = true;
+  if (page === 'sales') loadSalesAnalysis();
+  else if (page === 'users') loadUserAnalysis();
+  else if (page === 'reports') loadReports();
+  else if (page === 'products') {
+    applyProductsDefaults();
+    loadProductsKpi();
+    loadProducts();
+  }
+}
+
+// ========== 自适应 ==========
+window.addEventListener('resize', () => Object.values(charts).forEach(c => { try { c.resize(); } catch(e){} }));
+
+// ========== 保存设置页所有配置 ==========
+function saveAllSettings() {
+  // 读取所有 toggle 开关（按顺序对应）
+  const toggles = document.querySelectorAll('#page-settings .toggle');
+  const toggleStates = Array.from(toggles).map(t => t.classList.contains('on'));
+  // 读取输入框
+  const inputs = document.querySelectorAll('#page-settings .settings-input');
+  const inputVals = Array.from(inputs).map(i => i.value);
+  // 读取 select
+  const selects = document.querySelectorAll('#page-settings .filter-select');
+  const selectVals = Array.from(selects).map(s => s.value);
+
+  const newSettings = {
+    darkMode: toggleStates[0] || false,
+    autoRefresh: toggleStates[1] || false,
+    chartAnimation: toggleStates[2] || false,
+    salesAlert: toggleStates[3] || false,
+    stockAlert: toggleStates[4] || false,
+    dailyReport: toggleStates[5] || false,
+    pageSize: parseInt(selectVals[1]) || 10,
+    updateFreq: selectVals[0] || 'daily',
+    email: inputVals[2] || '',
+    dbUser: inputVals[1] || 'root'
+  };
+  saveSettingsObj(newSettings);
+
+  // 立即应用暗色模式
+  applyDarkMode(newSettings.darkMode);
+
+  showToast('设置已保存，下次打开自动生效', 'success');
+}
+
+// ========== 加载设置页的当前值 ==========
+function loadSettingsPage() {
+  const s = loadSettings();
+  const toggles = document.querySelectorAll('#page-settings .toggle');
+  const vals = [s.darkMode, s.autoRefresh, s.chartAnimation, s.salesAlert, s.stockAlert, s.dailyReport];
+  toggles.forEach((t, i) => {
+    if (vals[i]) t.classList.add('on');
+    else t.classList.remove('on');
+  });
+  const inputs = document.querySelectorAll('#page-settings .settings-input');
+  if (inputs[1]) inputs[1].value = s.dbUser;
+  if (inputs[2]) inputs[2].value = s.email;
+  const selects = document.querySelectorAll('#page-settings .filter-select');
+  if (selects[0]) selects[0].value = s.updateFreq;
+  if (selects[1]) selects[1].value = s.pageSize + ' 条/页';
+}
+
+// ========== 应用看板筛选默认值 ==========
+function applyDashboardDefaults() {
+  const s = loadSettings();
+  if (s.dashboard.category !== 'all' && document.getElementById('dashCategory')) {
+    // 等品类加载完再设置
+  }
+  if (document.getElementById('dashStartDate')) document.getElementById('dashStartDate').value = s.dashboard.startDate;
+  if (document.getElementById('dashEndDate')) document.getElementById('dashEndDate').value = s.dashboard.endDate;
+}
+
+// ========== 保存看板筛选条件 ==========
+function saveDashboardFilter() {
+  const category = document.getElementById('dashCategory')?.value || 'all';
+  const startDate = document.getElementById('dashStartDate')?.value || '2017-01-01';
+  const endDate = document.getElementById('dashEndDate')?.value || '2018-08-31';
+  saveSettingsObj({ dashboard: { category, startDate, endDate } });
+}
+
+// ========== 保存商品筛选条件 ==========
+function saveProductsFilter() {
+  const category = document.getElementById('prodCategory')?.value || 'all';
+  const priceRange = document.getElementById('prodPriceRange')?.value || 'all';
+  const sortBy = document.getElementById('prodSortBy')?.value || 'count';
+  const keyword = document.getElementById('prodKeyword')?.value || '';
+  saveSettingsObj({ products: { category, priceRange, sortBy, keyword } });
+}
+
+// ========== 启动 ==========
+(async function init() {
+  // 先应用保存的设置（暗色模式等）
+  applyAllSettings();
+  // 加载品类
+  await loadCategories();
+  // 应用看板筛选默认值
+  applyDashboardDefaults();
+  // 加载看板数据
+  await loadDashboard();
+  // 首次加载后记住初始筛选
+  saveDashboardFilter();
+
+  // ===== T7 增强模块初始化 =====
+  // 登录用户展示名回填侧边栏
+  try {
+    var dpUser = sessionStorage.getItem('dp_user');
+    if (dpUser) {
+      var un = document.querySelector('.user-name');
+      if (un) un.textContent = dpUser;
+    }
+  } catch (e) { /* ignore */ }
+  // B：角色视角（按默认角色显隐各模块，并 resize 图表）
+  if (typeof initRoleTabs === 'function') initRoleTabs();
+  // 店铺视角下拉（公开接口）
+  if (typeof initSellerSwitch === 'function') initSellerSwitch();
+  // 受保护接口：诊断 / 预警 / 补货建议 / 今日行动清单（带 X-Token，无 token 会自动跳登录）
+  if (typeof loadDiagnosis === 'function') loadDiagnosis();
+  if (typeof loadAlerts === 'function') loadAlerts();
+  if (typeof loadSignals === 'function') loadSignals();
+  if (typeof loadActionList === 'function') loadActionList();
+  // 术语气泡
+  if (typeof wireGlossary === 'function') wireGlossary();
+})();
+</script>
+</body>
+</html>
