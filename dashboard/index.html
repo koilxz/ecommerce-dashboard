@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>电商销售数据洞察看板 · DataPeak</title>
 <script src="assets/echarts.min.js"></script>
+<!-- 词云扩展：本地引入，禁止 CDN（CSP 只放行 127.0.0.1，且离线可运行） -->
+<script src="assets/echarts-wordcloud.min.js"></script>
 <!-- T7：主题样式 + ECharts datapeak 主题注册（前端契约 §8） -->
 <link rel="stylesheet" href="assets/theme.css">
 <script>
@@ -84,7 +86,7 @@ body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, "PingFang SC", "
 .page.active { display: block; }
 
 /* ===== KPI卡片 ===== */
-.kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 18px; }
+.kpi-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 14px; margin-bottom: 18px; }
 .kpi-card { background: #fff; border: 1px solid #EEF0F5; border-radius: 12px; padding: 18px 20px; transition: all 0.2s; }
 .kpi-card:hover { border-color: #E0E3EE; box-shadow: 0 4px 16px rgba(26,29,41,0.04); }
 .kpi-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
@@ -358,6 +360,7 @@ body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, "PingFang SC", "
         <div class="kpi-card kpi-pink"><div class="kpi-head"><div class="kpi-title"><span class="kpi-icon"><svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg></span>总订单数</div></div><div class="kpi-num" id="kpiOrders">--<span class="kpi-unit">单</span></div><div class="kpi-trend trend-up"><span class="trend-tag" id="kpiOrdersTrend">↑ --%</span><span class="trend-label">较上一周期</span></div></div>
         <div class="kpi-card kpi-cyan"><div class="kpi-head"><div class="kpi-title"><span class="kpi-icon"><svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg></span><span class="term" data-term="客单价">平均客单价</span></div></div><div class="kpi-num" id="kpiAvg">--<span class="kpi-unit">R$</span></div><div class="kpi-trend trend-up"><span class="trend-tag" id="kpiAvgTrend">↑ --%</span><span class="trend-label">较上一周期</span></div></div>
         <div class="kpi-card kpi-amber"><div class="kpi-head"><div class="kpi-title"><span class="kpi-icon"><svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></span>热销商品数</div></div><div class="kpi-num" id="kpiProducts">--<span class="kpi-unit">款</span></div><div class="kpi-trend trend-up"><span class="trend-tag" id="kpiProductsTrend">↑ --%</span><span class="trend-label">较上一周期</span></div></div>
+        <div class="kpi-card kpi-pink"><div class="kpi-head"><div class="kpi-title"><span class="kpi-icon"><svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></span><span class="term" data-term="复购率">复购率</span></div></div><div class="kpi-num" id="kpiRepeat">--<span class="kpi-unit">%</span></div><div class="kpi-trend"><span class="trend-tag" id="kpiRepeatTag">健康线 20%</span><span class="trend-label">回头客 ÷ 去重客户</span></div></div>
       </div>
       <!-- 店铺对比（代运营视角，来自公开 /sellers） -->
       <div class="card seller-compare" data-role="ops">
@@ -390,7 +393,11 @@ body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, "PingFang SC", "
           <div class="card-head"><div><div class="card-title"><svg viewBox="0 0 24 24" style="stroke:#06B6D4;fill:none"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>钱从哪来、该优化哪条？</div><div class="card-sub">看支付方式构成 · 优化主流支付渠道的转化</div></div></div><div class="pie-wrap"><div class="pie-chart" id="paymentChart"></div><div class="pie-legend" id="paymentLegend"></div></div>
         </div>
       </div>
-      <!-- ⑥ 订单量/价格区间分布 -->
+      <!-- ⑥ 品类销售额词云（分布类图表） -->
+      <div class="chart-card" data-role="owner dealer">
+        <div class="card-head"><div><div class="card-title"><svg viewBox="0 0 24 24" style="stroke:#7C84FF;fill:none"><circle cx="7" cy="7" r="3"/><circle cx="17" cy="9" r="2.5"/><circle cx="10" cy="17" r="2.5"/><circle cx="18" cy="17" r="2"/></svg>哪些品类在撑生意？</div><div class="card-sub">品类销售额分布（万 R$）· 字号越大卖得越多，一眼看出盘子由谁撑着</div></div></div><div class="chart-box" style="height:280px" id="categoryCloudChart"></div>
+      </div>
+      <!-- ⑦ 订单量/价格区间分布 -->
       <div class="chart-card" data-role="dealer">
         <div class="card-head"><div><div class="card-title"><svg viewBox="0 0 24 24" style="stroke:#EC4899;fill:none"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>我的客单价健康吗？</div><div class="card-sub">看在售商品价格区间 · 结合客单价判断定价结构</div></div></div><div class="chart-box" style="height:260px" id="priceChart"></div>
       </div>
@@ -864,6 +871,10 @@ async function loadDashboard() {
     document.getElementById('kpiOrders').innerHTML = kpi.totalOrders.toLocaleString() + '<span class="kpi-unit">单</span>';
     document.getElementById('kpiAvg').innerHTML = kpi.avgOrderValue + '<span class="kpi-unit">R$</span>';
     document.getElementById('kpiProducts').innerHTML = kpi.hotProducts.toLocaleString() + '<span class="kpi-unit">款</span>';
+    // ⑤ 复购率：回头客 ÷ 去重客户，健康线 20%（口径见术语气泡 data-term="复购率"）
+    document.getElementById('kpiRepeat').innerHTML = kpi.repurchaseRate + '<span class="kpi-unit">%</span>';
+    var rep = document.getElementById('kpiRepeatTag');
+    if (rep) rep.textContent = (kpi.repurchaseRate >= 20 ? '达健康线 20%' : '低于健康线 20%');
     renderKpiTrend('kpiSalesTrend', kpi.salesGrowth);
     renderKpiTrend('kpiOrdersTrend', kpi.ordersGrowth);
     renderKpiTrend('kpiAvgTrend', kpi.avgGrowth);
@@ -874,9 +885,12 @@ async function loadDashboard() {
   const trend = await fetchAPI('/orders/trend?' + params + '&granularity=month');
   if (trend) renderTrendChart(trend);
 
-  // ② 品类占比
-  const rank = await fetchAPI('/orders/category-rank?startDate=' + startDate + '&endDate=' + endDate + '&sellerId=' + curSeller + '&limit=10');
-  if (rank) renderCategoryChart(rank);
+  // ② 品类占比（取 30 个：前 10 画柱状图，全部 30 个画词云）
+  const rank = await fetchAPI('/orders/category-rank?startDate=' + startDate + '&endDate=' + endDate + '&sellerId=' + curSeller + '&limit=30');
+  if (rank && rank.length) {
+    renderCategoryChart(rank.slice(0, 10));
+    renderCloudChart(rank);
+  }
 
   // ⑥ 价格区间分布（客单价结构）
   const prod = await fetchAPI('/orders/product-ranking?category=' + category + '&startDate=' + startDate + '&endDate=' + endDate + '&sellerId=' + curSeller + '&sortBy=count&limit=30');
@@ -933,7 +947,63 @@ function renderCategoryChart(rank) {
   });
 }
 
-/* ⑥ 订单量 / 价格区间分布（用 TOP 商品价格分箱，回答“客单价健康吗”） */
+/* ⑥ 品类销售额词云（分布类图表：字号 = 销售额，回答"盘子由谁撑着"）
+   数据源复用 /orders/category-rank（已按销售额 DESC 排序），不新增后端接口。 */
+function renderCloudChart(rank) {
+  var el = document.getElementById('categoryCloudChart');
+  if (!el || !rank || !rank.length) return;
+  if (!charts.cloud) charts.cloud = echarts.init(el, 'datapeak');
+
+  var amounts = rank.map(function (r) { return r.salesAmount || 0; });
+  var max = Math.max.apply(null, amounts) || 1;
+  var min = Math.min.apply(null, amounts) || 0;
+  var palette = ['#5B5FFF', '#EC4899', '#22C55E', '#F59E0B', '#06B6D4', '#7C84FF', '#F97316', '#0EA5E9'];
+
+  var data = rank.map(function (r, i) {
+    var v = r.salesAmount || 0;
+    var t = max > min ? (v - min) / (max - min) : 1;
+    return {
+      name: r.categoryName,
+      value: v,
+      textStyle: { color: palette[i % palette.length] },
+      size: Math.round(13 + t * 34)
+    };
+  });
+
+  try {
+    charts.cloud.setOption({
+      tooltip: {
+        backgroundColor: '#fff', borderColor: '#EEF0F5', borderRadius: 8, padding: [10, 14],
+        textStyle: { color: '#1A1D29', fontSize: 12 },
+        formatter: function (p) { return p.name + '：' + (p.value || 0).toFixed(1) + ' 万 R$'; }
+      },
+      series: [{
+        type: 'wordCloud',
+        shape: 'circle',
+        left: 'center', top: 'center', width: '92%', height: '92%',
+        sizeRange: [13, 47],
+        rotationRange: [0, 0],
+        gridSize: 8,
+        drawOutOfBound: false,
+        textStyle: { fontFamily: 'inherit', fontWeight: 600 },
+        emphasis: { textStyle: { color: '#1A1D29' } },
+        data: data
+      }]
+    }, true);
+  } catch (e) {
+    // 兜底：词云扩展缺失时退化为横向条形，保证这一格不空白
+    var top = rank.slice(0, 12);
+    charts.cloud.setOption({
+      tooltip: { trigger: 'axis', backgroundColor: '#fff', borderColor: '#EEF0F5', borderRadius: 8, textStyle: { color: '#1A1D29', fontSize: 12 } },
+      grid: { left: '3%', right: '12%', bottom: '3%', top: '4%', containLabel: true },
+      xAxis: { type: 'value', name: '万 R$', axisLabel: { color: '#9AA1B2', fontSize: 10 }, splitLine: { lineStyle: { color: '#F5F6FA', type: 'dashed' } } },
+      yAxis: { type: 'category', data: top.map(function (r) { return r.categoryName; }).reverse(), axisLabel: { color: '#5B6272', fontSize: 11 }, axisLine: { show: false }, axisTick: { show: false } },
+      series: [{ type: 'bar', data: top.map(function (r) { return r.salesAmount || 0; }).reverse(), barWidth: 10, itemStyle: { borderRadius: [0, 6, 6, 0], color: '#7C84FF' } }]
+    }, true);
+  }
+}
+
+/* ⑦ 订单量 / 价格区间分布（用 TOP 商品价格分箱，回答“客单价健康吗”） */
 function renderPriceChart(list) {
   if (!list || !list.length) return;
   if (!charts.price) charts.price = echarts.init(document.getElementById('priceChart'), 'datapeak');
