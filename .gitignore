@@ -1,0 +1,42 @@
+# ---------- 构建产物 ----------
+backend/target/
+*.jar
+*.war
+
+# ---------- 运行时数据库（H2 文件库，启动时自动重建） ----------
+data/*.mv.db
+data/*.trace.db
+data/*.lock.db
+*.mv.db
+
+# ---------- 原始数据集（体积大，获取方式见 data/README.md） ----------
+archive/*.csv
+archive/*.zip
+archive.zip
+
+# ---------- 组员交付压缩包（单文件 400MB，不进仓库） ----------
+队友修改后/*.zip
+队友修改后/_inspect/
+
+# ---------- 课程原始课件（体积大，且非本项目产出） ----------
+项目需求文档/*.pptx
+
+# ---------- IDE / 工具 ----------
+.idea/
+*.iml
+.vscode/
+.workbuddy/
+.slidep/
+.trae-html-share-packages/
+
+# ---------- 操作系统 ----------
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ---------- 临时验证文件 ----------
+.q*.json
+.verify_*.json
+verify_*.json
+_a.json
+*.log
