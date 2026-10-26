@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DataPeak · 看不懂 Excel 也能看懂生意</title>
+<link rel="stylesheet" href="assets/theme.css">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: var(--font);
+    background: linear-gradient(160deg, #EEF3FF 0%, #F7F9FC 45%, #F7F9FC 100%);
+    color: #1A1D29;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { width: 100%; max-width: 880px; }
+  .brand { display: flex; align-items: center; gap: 12px; margin-bottom: 28px; }
+  .brand-mark {
+    width: 44px; height: 44px; border-radius: 12px;
+    background: linear-gradient(135deg, #2F6BFF 0%, #5B5FFF 100%);
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 6px 18px rgba(47,107,255,.25);
+  }
+  .brand-mark svg { width: 22px; height: 22px; stroke: #fff; fill: none; stroke-width: 2.2; }
+  .brand-name { font-size: 22px; font-weight: 800; letter-spacing: -.5px; }
+  .hero { margin-bottom: 32px; }
+  .hero h1 { font-size: 34px; font-weight: 800; letter-spacing: -1px; line-height: 1.25; }
+  .hero h1 .hl { color: var(--c-primary); }
+  .hero p { margin-top: 12px; font-size: 15px; color: #5B6272; line-height: 1.7; }
+
+  .quick-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 30px; }
+  .quick-card {
+    background: #fff; border: 1px solid #EEF0F5; border-radius: 14px; padding: 18px;
+    text-align: center; cursor: pointer; transition: all .18s;
+  }
+  .quick-card:hover { border-color: #2F6BFF; box-shadow: 0 8px 24px rgba(47,107,255,.12); transform: translateY(-2px); }
+  .quick-avatar {
+    width: 48px; height: 48px; border-radius: 50%; margin: 0 auto 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; color: #fff;
+  }
+  .quick-role { font-size: 13.5px; font-weight: 700; }
+  .quick-desc { font-size: 11.5px; color: #9AA1B2; margin-top: 4px; }
+
+  .login-card {
+    background: #fff; border: 1px solid #EEF0F5; border-radius: 16px; padding: 26px;
+    box-shadow: 0 10px 40px rgba(26,29,41,.06);
+  }
+  .login-card h2 { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+  .login-card .sub { font-size: 12.5px; color: #9AA1B2; margin-bottom: 18px; }
+  .field { margin-bottom: 14px; }
+  .field label { display: block; font-size: 12.5px; font-weight: 600; color: #5B6272; margin-bottom: 6px; }
+  .field input {
+    width: 100%; padding: 11px 13px; border: 1px solid #E4E7EF; border-radius: 9px;
+    font-size: 14px; font-family: inherit; outline: none; transition: all .15s; color: #1A1D29;
+  }
+  .field input:focus { border-color: #2F6BFF; box-shadow: 0 0 0 3px rgba(47,107,255,.12); }
+  .login-btn {
+    width: 100%; margin-top: 6px; padding: 12px; border: none; border-radius: 9px;
+    background: linear-gradient(135deg, #2F6BFF, #5B5FFF); color: #fff;
+    font-size: 14px; font-weight: 700; cursor: pointer; transition: all .2s; font-family: inherit;
+  }
+  .login-btn:hover { box-shadow: 0 6px 18px rgba(47,107,255,.3); }
+  .hint {
+    margin-top: 14px; font-size: 12px; color: #8A90A2; text-align: center;
+    background: #F3F4F9; border-radius: 8px; padding: 8px;
+  }
+  .hint code { color: var(--c-primary); font-weight: 700; }
+
+  /* Toast（与 auth.js#showToast 配合） */
+  .toast {
+    position: fixed; bottom: 24px; right: 24px; padding: 12px 20px;
+    background: #1A1D29; color: #fff; border-radius: 8px; font-size: 13px;
+    z-index: 9999; display: none; align-items: center; gap: 8px;
+    box-shadow: 0 4px 16px rgba(0,0,0,.15);
+  }
+  .toast.show { display: flex; }
+  .toast.success { background: #16A34A; }
+  .toast.error { background: #DC2626; }
+
+  @media (max-width: 700px) {
+    .quick-grid { grid-template-columns: 1fr; }
+    .hero h1 { font-size: 26px; }
+  }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="brand">
+      <div class="brand-mark"><svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M7 16l4-4 4 4 5-5"/></svg></div>
+      <div class="brand-name">DataPeak</div>
+    </div>
+
+    <div class="hero">
+      <h1>看不懂 Excel<br>也能看懂<span class="hl">生意</span></h1>
+      <p>DataPeak 电商数据看板 · 把繁杂的销售数据变成一句能听懂的结论。选择你的身份，一键进入。</p>
+    </div>
+
+    <!-- 三类用户一键进入 -->
+    <div class="quick-grid">
+      <div class="quick-card quick-login" data-user="女装店主林姐">
+        <div class="quick-avatar" style="background:linear-gradient(135deg,#EC4899,#F59E0B)">👗</div>
+        <div class="quick-role">女装店主林姐</div>
+        <div class="quick-desc">看每日销量与品类涨跌</div>
+      </div>
+      <div class="quick-card quick-login" data-user="代运营小吴">
+        <div class="quick-avatar" style="background:linear-gradient(135deg,#2F6BFF,#22C55E)">📊</div>
+        <div class="quick-role">代运营小吴</div>
+        <div class="quick-desc">多店铺对比与履约表现</div>
+      </div>
+      <div class="quick-card quick-login" data-user="经销商陈总">
+        <div class="quick-avatar" style="background:linear-gradient(135deg,#7C84FF,#06B6D4)">🏬</div>
+        <div class="quick-role">经销商陈总</div>
+        <div class="quick-desc">看大盘趋势与补货建议</div>
+      </div>
+    </div>
+
+    <!-- 登录表单 -->
+    <div class="login-card">
+      <h2>登录看板</h2>
+      <div class="sub">使用演示账号登录即可体验全部功能</div>
+      <form id="loginForm" autocomplete="off">
+        <div class="field">
+          <label for="username">用户名</label>
+          <input type="text" id="username" placeholder="请输入用户名" value="demo">
+        </div>
+        <div class="field">
+          <label for="password">密码</label>
+          <input type="password" id="password" placeholder="请输入密码" value="demo123">
+        </div>
+        <button type="submit" class="login-btn">进入看板</button>
+      </form>
+      <div class="hint">演示账号：<code>demo</code> / <code>demo123</code></div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <!-- 鉴权与请求封装 -->
+  <script src="assets/auth.js"></script>
+  <script>
+    // 演示账号（三类用户均映射到同一演示账号，后端仅 demo/admin 两账号）
+    var DEMO = { username: 'demo', password: 'demo123' };
+
+    /**
+     * 执行登录：POST /auth/login，成功后存 token 与展示名并跳转看板。
+     */
+    function doLogin(user, pass) {
+      if (!user || !pass) {
+        showToast('请输入用户名和密码', 'error');
+        return;
+      }
+      apiFetch('/auth/login', { method: 'POST', body: { username: user, password: pass } })
+        .then(function (r) {
+          setToken(r.token);
+          sessionStorage.setItem('dp_user', r.displayName || user);
+          location.href = 'index.html';
+        })
+        .catch(function () {
+          showToast('用户名或密码错误（演示账号 demo / demo123）', 'error');
+        });
+    }
+
+    // 三类用户一键进入：填入演示账号并提交
+    document.querySelectorAll('.quick-login').forEach(function (card) {
+      card.addEventListener('click', function () {
+        document.getElementById('username').value = DEMO.username;
+        document.getElementById('password').value = DEMO.password;
+        doLogin(DEMO.username, DEMO.password);
+      });
+    });
+
+    // 登录表单提交
+    document.getElementById('loginForm').addEventListener('submit', function (e) {
+      e.preventDefault();
+      var u = document.getElementById('username').value.trim();
+      var p = document.getElementById('password').value;
+      doLogin(u, p);
+    });
+  </script>
+</body>
+</html>
