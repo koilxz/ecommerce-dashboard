@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DataPeak 电商看板 · 人机协同方案（课程展示版）</title>
+<style>
+:root{
+  --bg:#ffffff; --ink:#1f2933; --muted:#5b6b7b; --line:#d9e2ec;
+  --human:#2563eb; --ai:#0d9488; --gate:#d97706; --accent:#7c3aed;
+  --humanbg:#eff6ff; --aibg:#ecfdf5; --gatebg:#fffbeb; --soft:#f8fafc;
+}
+*{box-sizing:border-box;}
+body{margin:0;font-family:"Segoe UI","Microsoft YaHei",sans-serif;color:var(--ink);background:var(--bg);line-height:1.75;}
+header{padding:38px 48px;background:linear-gradient(135deg,#1e293b,#334155);color:#fff;}
+header h1{margin:0 0 6px;font-size:25px;letter-spacing:.5px;}
+header p{margin:0;color:#cbd5e1;font-size:14px;}
+main{max-width:1000px;margin:0 auto;padding:30px 48px 70px;}
+h2{font-size:20px;border-left:4px solid var(--accent);padding-left:12px;margin-top:42px;color:#1e293b;}
+h3{font-size:15px;color:var(--muted);margin:24px 0 8px;font-weight:600;}
+p{margin:10px 0;}
+table{width:100%;border-collapse:collapse;margin:16px 0;font-size:13.5px;}
+th,td{border:1px solid var(--line);padding:9px 11px;vertical-align:top;text-align:left;}
+th{background:#f1f5f9;font-weight:600;color:#334155;}
+.tag{display:inline-block;padding:2px 9px;border-radius:4px;font-size:12px;font-weight:600;white-space:nowrap;}
+.tag.h{background:var(--humanbg);color:var(--human);}
+.tag.a{background:var(--aibg);color:var(--ai);}
+.tag.g{background:var(--gatebg);color:var(--gate);}
+.card{border:1px solid var(--line);border-radius:10px;padding:16px 20px;margin:16px 0;background:var(--soft);}
+.code{background:#0f172a;color:#e2e8f0;padding:14px 16px;border-radius:8px;font-family:"Consolas","Courier New",monospace;font-size:12.5px;white-space:pre-wrap;overflow:auto;line-height:1.6;}
+.note{background:var(--gatebg);border:1px solid #fde68a;padding:12px 16px;border-radius:8px;font-size:13px;color:#92400e;margin:14px 0;}
+.svgwrap{text-align:center;margin:22px 0;background:var(--soft);border:1px solid var(--line);border-radius:10px;padding:18px;}
+footer{text-align:center;color:var(--muted);font-size:12px;padding:26px;border-top:1px solid var(--line);}
+ul{padding-left:20px;} li{margin:6px 0;}
+.col2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+@media(max-width:760px){.col2{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>DataPeak 电商看板 · 人机协同方案</h1>
+  <p>课程展示 / 答辩版 · 面向非专业开发者小组的人机协同分工、SOP 与 Prompt 指导</p>
+</header>
+
+<main>
+
+<h2>一、协同定位（一句话 + 为何本组尤其需要）</h2>
+<p><b>人机协同的本质是能力互补：人负责定方向、做判断、担责任；AI 负责出算力、做执行、跑规模。</b>判断一项工作归属的准则只有一条——<b>"此事是否需要价值判断或承担责任？需要→人；不需要且可标准化→AI。"</b></p>
+<div class="card">
+  <h3 style="margin-top:0">为何本组（非专业开发者）更需要显性的人机协同</h3>
+  <ul>
+    <li><b>能力缺口由 AI 补齐：</b>本组不擅长编码、调试、部署与数据清洗，这些恰是 AI 可稳定执行的环节，使小组能交付一个完整可运行的 Web 应用。</li>
+    <li><b>风险由人兜底：</b>需求定义、产品定位、数据真实性、对外口径与账号安全，必须由人判断与拍板，避免"AI 幻觉"直接变成交付物。</li>
+    <li><b>协同需被记录：</b>非专业开发者的优势在业务理解，劣势在技术细节；把"谁做了什么、谁拍了板"显性化，既是质量保障，也是本评分项的直接证据。</li>
+  </ul>
+</div>
+
+<h2>二、项目启动：先划清人机分工（展示用主图）</h2>
+<p>本组在编写第一行代码之前，先召开了<b>人机分工确认会</b>，将"谁定方向、谁做执行、谁拍板"作为项目基线。下图即为该基线的可视化表达，可直接截图用于展示。</p>
+
+<div class="svgwrap">
+<svg viewBox="0 0 900 400" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI, Microsoft YaHei, sans-serif">
+  <defs>
+    <marker id="arr" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L8,3 L0,6 Z" fill="#64748b"></path>
+    </marker>
+  </defs>
+
+  <text x="450" y="30" text-anchor="middle" font-size="19" font-weight="700" fill="#1e293b">项目启动：先划清人机协同分工</text>
+  <text x="450" y="52" text-anchor="middle" font-size="12.5" fill="#5b6b7b">写第一行代码前先开分工确认会，明确"谁定方向、谁做执行、谁拍板"</text>
+
+  <!-- flow nodes -->
+  <!-- n1 -->
+  <rect x="20" y="110" width="150" height="66" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"></rect>
+  <text x="95" y="138" text-anchor="middle" font-size="14" font-weight="700" fill="#1e40af">① 项目立项</text>
+  <text x="95" y="158" text-anchor="middle" font-size="11.5" fill="#5b6b7b">人：定题目与目标</text>
+
+  <!-- n2 highlight -->
+  <rect x="195" y="104" width="160" height="78" rx="8" fill="#fffbeb" stroke="#d97706" stroke-width="2"></rect>
+  <text x="275" y="132" text-anchor="middle" font-size="14" font-weight="700" fill="#b45309">② 人机分工确认会</text>
+  <text x="275" y="152" text-anchor="middle" font-size="11.5" fill="#92400e">人主导 · 项目基线</text>
+  <text x="275" y="170" text-anchor="middle" font-size="11" fill="#92400e">明确三项（见下方）</text>
+
+  <!-- n3 -->
+  <rect x="375" y="110" width="150" height="66" rx="8" fill="#f1f5f9" stroke="#475569" stroke-width="1.5"></rect>
+  <text x="450" y="138" text-anchor="middle" font-size="14" font-weight="700" fill="#334155">③ 产出《分工表》</text>
+  <text x="450" y="158" text-anchor="middle" font-size="11.5" fill="#5b6b7b">人定 / AI 认领</text>
+
+  <!-- n4 -->
+  <rect x="555" y="110" width="150" height="66" rx="8" fill="#ecfdf5" stroke="#0d9488" stroke-width="1.5"></rect>
+  <text x="630" y="138" text-anchor="middle" font-size="14" font-weight="700" fill="#0f766e">④ AI 边界内执行</text>
+  <text x="630" y="158" text-anchor="middle" font-size="11.5" fill="#5b6b7b">编码/调试/文档</text>
+
+  <!-- n5 -->
+  <rect x="735" y="110" width="150" height="66" rx="8" fill="#fffbeb" stroke="#d97706" stroke-width="1.5"></rect>
+  <text x="810" y="138" text-anchor="middle" font-size="14" font-weight="700" fill="#b45309">⑤ 闸门复核·交付</text>
+  <text x="810" y="158" text-anchor="middle" font-size="11.5" fill="#5b6b7b">人验收拍板</text>
+
+  <!-- arrows -->
+  <line x1="170" y1="143" x2="192" y2="143" stroke="#64748b" stroke-width="2" marker-end="url(#arr)"></line>
+  <line x1="355" y1="143" x2="372" y2="143" stroke="#64748b" stroke-width="2" marker-end="url(#arr)"></line>
+  <line x1="525" y1="143" x2="552" y2="143" stroke="#64748b" stroke-width="2" marker-end="url(#arr)"></line>
+  <line x1="705" y1="143" x2="732" y2="143" stroke="#64748b" stroke-width="2" marker-end="url(#arr)"></line>
+
+  <!-- callout -->
+  <rect x="20" y="220" width="865" height="160" rx="10" fill="#fffbeb" stroke="#fcd34d" stroke-width="1.5"></rect>
+  <text x="40" y="248" font-size="14" font-weight="700" fill="#b45309">分工确认会明确三项（本项目的协同基线）</text>
+  <text x="40" y="276" font-size="13" fill="#334155">① 哪些交给 AI：</text>
+  <text x="150" y="276" font-size="13" fill="#0f766e">代码生成与调试、文档与 PPT 初稿、数据导入与去重、重复性构建排错</text>
+  <text x="40" y="304" font-size="13" fill="#334155">② 哪些必须人做：</text>
+  <text x="150" y="304" font-size="13" fill="#1e40af">需求与产品定位、数据真实性把关、对外答辩口径、账号与隐私安全</text>
+  <text x="40" y="332" font-size="13" fill="#334155">③ 出问题谁拍板：</text>
+  <text x="150" y="332" font-size="13" fill="#92400e">人保留一票否决权；所有 AI 产出由人最终验收，保留记录可追溯</text>
+  <text x="40" y="362" font-size="12" fill="#64748b">说明：该分工表在项目启动时即确定，后续每个任务均在此框架内运行，不临时扩大 AI 自主范围。</text>
+</svg>
+</div>
+
+<h2>三、详细分工矩阵（非开发者视角，按阶段切分）</h2>
+<p>下表将项目全生命周期拆为六个阶段，逐项标注"人负责 / AI 负责 / 交接闸门"。闸门即人机边界的硬开关：越过闸门的事项必须由人确认，AI 不得擅自执行。</p>
+<table>
+  <thead>
+    <tr><th style="width:16%">阶段</th><th style="width:30%">人（本组组员）负责</th><th style="width:30%">AI（协同工具）负责</th><th style="width:24%">交接闸门</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><b>需求与定位</b></td><td>界定目标用户（看店店主"林姐"）、明确"每张图对应一个动作"的取舍标准、确定产品边界</td><td>将口头需求整理为结构化需求卡草稿</td><td><span class="tag g">人拍板</span> 产品定位与砍图决策不可由 AI 代定</td></tr>
+    <tr><td><b>技术实现</b></td><td>确认技术选型可行性、审阅改动点、决定是否采纳</td><td>生成 Spring Boot 后端接口、前端 ECharts 图表、H2 数据库自举导入脚本</td><td><span class="tag a">AI 直做</span> 纯技术实现可在边界内直接执行</td></tr>
+    <tr><td><b>数据处理</b></td><td>定义"什么算真实"、审核推测口径标注是否到位</td><td>CSV 导入、BOM 处理、重复记录去重、字段映射</td><td><span class="tag g">人复核</span> 任何数据含义表述须经人确认</td></tr>
+    <tr><td><b>排错与构建</b></td><td>提供完整报错与环境信息、确认命令安全性后执行</td><td>定位报错根因、给出可复制命令（如代理 502 走 --noproxy、JAR 占用先 taskkill）</td><td><span class="tag g">人确认</span> 涉及删除/登录/账号的命令必须人执行</td></tr>
+    <tr><td><b>验收与展示</b></td><td>浏览器实测、答辩口径、最终结论、对外表达</td><td>生成验收清单草稿、PPT 与文档初稿</td><td><span class="tag g">人拍板</span> 对外口径与真实性由人兜底</td></tr>
+    <tr><td><b>安全与伦理</b></td><td>账号/密码/token 管理、隐私红线、一票否决</td><td>在权限内调用，不接触凭据</td><td><span class="tag g">红线</span> 凭据绝不进文件/日志，账号操作须本人</td></tr>
+  </tbody>
+</table>
+
+<h2>四、协同 SOP 撰写指导（含本项目现成范例）</h2>
+
+<h3>4.1 什么是 SOP，为何人机协同需要它</h3>
+<p><b>SOP（标准作业流程）</b>是把"人机会如何配合完成一类任务"固化成可复用的步骤清单。对与非专业开发者小组，SOP 的价值在于：把"靠临场发挥"变成"按步骤走"，降低对个人的技术依赖，并保证每次协同的质量一致、可追溯。</p>
+
+<h3>4.2 SOP 的标准写法（字段模板）</h3>
+<table>
+  <thead><tr><th style="width:22%">字段</th><th>说明（撰写要点）</th></tr></thead>
+  <tbody>
+    <tr><td><b>编号 / 名称</b></td><td>唯一标识 + 一句话说明用途，如"SOP-DV-01 需求转实现"</td></tr>
+    <tr><td><b>适用场景</b></td><td>什么情况下启用本流程，避免误用</td></tr>
+    <tr><td><b>角色与步骤</b></td><td>逐条写明"谁（人/AI）做哪一步"，并标注产出物</td></tr>
+    <tr><td><b>闸门 / 复核点</b></td><td>在哪些步骤必须停下来由人确认</td></tr>
+    <tr><td><b>产出与记录</b></td><td>流程结束交付什么，留下什么以供追溯</td></tr>
+  </tbody>
+</table>
+
+<h3>4.3 本项目可直用的四个 SOP 范例</h3>
+
+<div class="card">
+<b>SOP-DV-01　需求转实现流程</b>
+<ul>
+  <li><b>人</b>：写需求卡——目标用户、要解决的<b>一个动作</b>、明确不要什么。</li>
+  <li><b>人</b>：将需求卡转为结构化 Prompt 交给 AI（见第五章模板）。</li>
+  <li><b>AI</b>：生成代码并说明改动点（先给差异，再给代码）。</li>
+  <li><b>人</b>：本地按"看到 XX 才算完成"的验收标准运行确认。</li>
+  <li><b>闸门</b>：涉及产品定位 / 砍功能 → 人拍板；纯技术实现 → AI 可直接做。</li>
+  <li><b>产出</b>：《需求卡》+ 代码 + 验收记录。</li>
+</ul>
+</div>
+
+<div class="card">
+<b>SOP-DV-02　AI 产出人工复核清单</b>
+<ul>
+  <li><b>真实性</b>：数据有无编造？推测项是否已标注？</li>
+  <li><b>边界</b>：是否越界承诺了拿不到的数据（库存 / 成本 / 流量 / 投放）？</li>
+  <li><b>一致性</b>：是否与已定产品定位（林姐 / 5 张图）冲突？</li>
+  <li><b>一票否决</b>：任一项不通过，打回 AI 重做，不计为交付。</li>
+</ul>
+</div>
+
+<div class="card">
+<b>SOP-DV-03　排错协同流程</b>
+<ul>
+  <li><b>人</b>：复制完整报错 + 环境（系统 / 端口 / 代理状态）贴给 AI。</li>
+  <li><b>AI</b>：定位根因 + 给出可复制命令。</li>
+  <li><b>人</b>：确认命令安全（不删库、不替你登录）后执行。</li>
+  <li><b>人</b>：验证解决，并将该坑写回 Skill / Memory（反馈闭环）。</li>
+</ul>
+</div>
+
+<div class="card">
+<b>SOP-DV-04　数据口径把关流程</b>
+<ul>
+  <li>适用：任何涉及"数据含义"的表述（图表标题、答辩话术、文档）。</li>
+  <li>规则：Olist 数据集拿不到的（库存 / 成本 / 流量 / 投放）一律不承诺。</li>
+  <li>规则：凡推测（如"基于销售趋势推测，非实时库存"）必须显式标注，不得伪装成确定结论。</li>
+</ul>
+</div>
+
+<h2>五、Prompt（提示词）撰写指导（含本项目现成范例）</h2>
+
+<h3>5.1 为何非专业开发者更需结构化 Prompt</h3>
+<p>AI 的输出质量高度依赖输入的清晰度。非专业开发者若只说"帮我做个看板"，AI 会自行假设技术栈与范围，结果往往跑偏。采用<b>五段式结构</b>后，即使不懂代码，也能稳定拿到可用产出。</p>
+
+<h3>5.2 五段式 Prompt 模板</h3>
+<div class="code">[角色]   你是一名资深的 ___ 工程师，熟悉 ___。
+[背景]   我们的项目是 ___，当前技术栈/环境是 ___，已约定 ___。
+[任务]   请帮我 ___（具体到可验证的结果）。
+[约束]   不要 ___；必须 ___；输出 ___。
+[输出格式] 先给"改动点/思路"，再给可复制的代码/命令，最后给"验收标准"。</div>
+
+<h3>5.3 本项目三个可直抄的 Prompt 范例</h3>
+
+<div class="card">
+<b>范例 1 · 后端接口实现</b>
+<div class="code">[角色] 你是一名资深 Java / Spring Boot 工程师。
+[背景] 项目 DataPeak 是给看店店主用的电商看板，后端用 Spring Boot + H2 文件库，
+       数据库自举在 DatabaseInitializer，金额已转"万 R$"。
+[任务] 新增一个接口，返回近 12 个月销售额趋势（月份、销售额、订单量）。
+[约束] 不改动产品定位；SQL 用显式列名；金额单位保持"万 R$"。
+[输出格式] 先给改动点，再给 Controller/Service 代码，最后给 curl 验收命令。</div>
+</div>
+
+<div class="card">
+<b>范例 2 · 前端图表修改</b>
+<div class="code">[角色] 你是一名前端工程师，熟悉原生 JS + ECharts。
+[背景] 前端 API 基址必须写 http://127.0.0.1:8080/api（不能写 localhost，否则被 CSP 拦截）。
+[任务] 把"品类涨跌榜"图改为存量+增量合并的横向条形图，点击可看明细。
+[约束] 不要新增第三方库；颜色遵循红涨绿跌（中国习惯）。
+[输出格式] 先给改动点，再给 JS 片段，最后给浏览器验收步骤。</div>
+</div>
+
+<div class="card">
+<b>范例 3 · 排错求助</b>
+<div class="code">[角色] 你是一名运维/排错助手。
+[背景] 本机有 Clash 代理；命令行 curl http://localhost:8080 走代理返回 502。
+[任务] 后端 Spring Boot 已启动但本地访问 502，请定位原因并给命令。
+[约束] 不要让我关闭代理；给出可直接复制的命令；说明每条命令的作用。
+[输出格式] 先给原因，再给命令清单，最后给如何确认已解决。</div>
+</div>
+
+<h3>5.4 常见错误清单（写 Prompt 时自查）</h3>
+<table>
+  <thead><tr><th style="width:34%">错误写法</th><th>后果与修正</th></tr></thead>
+  <tbody>
+    <tr><td>"帮我做个看板"</td><td>太模糊 → 补【任务】与【背景】，写明要什么结果</td></tr>
+    <tr><td>不写项目背景</td><td>AI 瞎编技术栈 → 必写当前环境与技术约定</td></tr>
+    <tr><td>不写约束</td><td>AI 承诺做不到的（如实时库存）→ 用【约束】划红线</td></tr>
+    <tr><td>不要输出格式</td><td>拿到一大段难用的文字 → 强制"先思路/再代码/后验收"</td></tr>
+    <tr><td>一次塞太多任务</td><td>产出失控 → 一个 Prompt 只解决一类可验证结果</td></tr>
+  </tbody>
+</table>
+
+<h2>六、协同规范（落地红线，调整项目前先确立）</h2>
+<div class="note">
+<b>本组人机协同七条基线（建议在展示中作为"我们的协同制度"呈现）：</b>
+<ol style="margin:8px 0 0;padding-left:22px;">
+  <li><b>决策闸门：</b>AI 直做=代码/调试/文档初稿/重复排错；必须人确认=定位/砍功能/对外口径/隐私账号/数据真实性。</li>
+  <li><b>真实性红线：</b>数据不编造；推测必标注；无字段（库存/成本/流量/投放）不承诺。</li>
+  <li><b>先试点后推广：</b>改项目先动一个模块验证跑通，再全量复制，不一开始追求全场景自动化。</li>
+  <li><b>先有闸门再求效率：</b>初期走"AI 建议、人全审"，靠审计与抽检调优后再放宽。</li>
+  <li><b>反馈闭环（HITL）：</b>人修正的内容回流到 Prompt / 规则 / Skill，避免重复趟坑。</li>
+  <li><b>隐私安全：</b>token / 密码不进文件与日志；账号登录等须本人操作。</li>
+  <li><b>可追溯：</b>保留对话与关键决策点，答辩时能说清"这一步是人定还是 AI 执行"。</li>
+</ol>
+</div>
+
+</main>
+
+<footer>
+  DataPeak 电商看板小组 · 人机协同方案（课程展示版） · 本方案随项目迭代更新
+</footer>
+
+</body>
+</html>
