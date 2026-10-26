@@ -1,0 +1,57 @@
+classDiagram
+    class OrderService { <<interface>>
+        +List~String~ getCategoryList()
+        +KpiDTO getKpi(category,start,end,sellerId)
+        +TrendDTO getTrend(category,start,end,gran,sellerId)
+        +List~CategoryRankDTO~ getCategoryRank(start,end,limit,sellerId)
+        +List~ProductRankDTO~ getProductRanking(...)
+        +List~PaymentDistributionDTO~ getPaymentDistribution(...)
+        +UserDistributionDTO getUserDistribution(...)
+        +PageResult~OrderDTO~ getOrders(...,sellerId,...)
+    }
+    class JpaOrderServiceImpl { +@Primary }
+    class MockOrderServiceImpl { +@Profile("mock") }
+    OrderService <|.. JpaOrderServiceImpl
+    OrderService <|.. MockOrderServiceImpl
+
+    class DiagnosisService { +DiagnosisDTO diagnose(start,end,sellerId) }
+    class SignalsService { +List~CategorySignalDTO~ signals(start,end,sellerId) }
+    class AlertsService { +List~AlertDTO~ alerts(start,end,sellerId) }
+    class AuthService { +LoginResponseDTO login(req) +boolean validate(token) }
+
+    class OrderController
+    class DiagnosisController
+    class SignalsController
+    class AlertsController
+    class AuthController
+    class SellerController
+
+    OrderController --> OrderService
+    DiagnosisController --> DiagnosisService
+    SignalsController --> SignalsService
+    AlertsController --> AlertsService
+    AuthController --> AuthService
+
+    class RuleConfig { +int salesGrowthStrong +int repurchaseLow +double reviewLow ... }
+    DiagnosisServiceImpl ..> RuleConfig : reads thresholds
+    SignalsServiceImpl ..> RuleConfig
+    AlertsServiceImpl ..> RuleConfig
+
+    class OrderRepository
+    class OrderItemRepository
+    class ProductRepository
+    class ReviewRepository
+    class CustomerRepository
+    class SellerRepository
+    class UserRepository
+    JpaOrderServiceImpl --> OrderRepository
+    JpaOrderServiceImpl --> OrderItemRepository
+    DiagnosisServiceImpl --> OrderRepository
+    DiagnosisServiceImpl --> OrderItemRepository
+    DiagnosisServiceImpl --> ReviewRepository
+    DiagnosisServiceImpl --> CustomerRepository
+    AuthServiceImpl --> UserRepository
+    SellerController --> SellerRepository
+
+    class DatabaseInitializer { +run() CSVREAD import }
+    DatabaseInitializer --> OrderRepository

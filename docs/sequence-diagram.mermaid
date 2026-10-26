@@ -1,0 +1,58 @@
+%% 时序图 1：前端 fetch -> 后端 -> DB（KPI + sellerId 切片）
+sequenceDiagram
+    participant FE as 前端 index.html
+    participant API as OrderController
+    participant SVC as JpaOrderServiceImpl
+    participant REPO as OrderItemRepository/OrderRepository
+    participant DB as H2 文件库
+
+    FE->>API: GET /api/orders/kpi?category=all&sellerId=SELLER_X
+    API->>SVC: getKpi("all",null,null,"SELLER_X")
+    SVC->>REPO: 聚合查询(SUM(price), 环比, 复购, 评分...)
+    REPO->>DB: SELECT ... JOIN t_order/t_order_item WHERE seller_id=?
+    DB-->>REPO: 结果集
+    REPO-->>SVC: 聚合值
+    SVC-->>SVC: 金额/10000 转万 + 品类/支付中文映射
+    SVC-->>API: KpiDTO
+    API-->>FE: ApiResponse~KpiDTO~ (code=200,data=...)
+    FE->>FE: 渲染 KPI 卡片(万 R$)
+
+%% 时序图 2：诊断接口（规则引擎拼装结论）
+sequenceDiagram
+    participant FE as 前端 diagnosis.js
+    participant DC as DiagnosisController
+    participant DS as DiagnosisServiceImpl
+    participant REPO as Repository
+    participant RC as RuleConfig
+
+    FE->>DC: GET /api/diagnosis (Header X-Token)
+    DC->>DS: diagnose(start,end,sellerId)
+    DS->>REPO: 拉取本期/上期 KPI 与维度
+    REPO-->>DS: kpi / 各维度
+    DS->>RC: 读取阈值(>+10% / <20% / <3.5 ...)
+    DS->>DS: 逐指标比对 → 生成 SignalDTO[]
+    DS->>DS: 按模板拼装 conclusionText
+    DS-->>DC: DiagnosisDTO(signals[], conclusionText)
+    DC-->>FE: ApiResponse~DiagnosisDTO~
+    FE->>FE: 渲染诊断卡片 + 彩色 chip
+
+%% 时序图 3：登录校验
+sequenceDiagram
+    participant FE as 前端 welcome.html/auth.js
+    participant AC as AuthController
+    participant AS as AuthServiceImpl
+    participant UR as UserRepository
+    participant INT as LoginInterceptor
+
+    FE->>AC: POST /api/auth/login {username,password}
+    AC->>AS: login(req)
+    AS->>UR: findByUsername
+    UR-->>AS: User
+    AS->>AS: 比对口令 → 生成 UUID token 存内存 Map
+    AS-->>AC: LoginResponseDTO(token,...)
+    AC-->>FE: ApiResponse~LoginResponseDTO~
+    FE->>FE: token 存 sessionStorage
+    Note over FE,INT: 后续请求 /api/diagnosis 带 X-Token
+    FE->>INT: GET /api/diagnosis (X-Token)
+    INT->>INT: 校验 token 是否在 Map
+    INT-->>FE: 通过 → 进入 DiagnosisController
